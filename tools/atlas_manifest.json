@@ -1,0 +1,19 @@
+{
+    "_comment": "Source -> atlas manifest consumed by tools/build_atlas.py. Paths are relative to the project root. Only the runtime HUD/character art is packed; large tilesets (Interior 2.png, terrain, etc.) stay separate because they're already used as sf::Texture-backed tilemaps with their own UV math.",
+    "output": {
+        "image": "resources/sprites/atlas.png",
+        "json":  "resources/sprites/atlas.json",
+        "padding": 2,
+        "max_size": 1024
+    },
+    "sources": [
+        { "name": "character_sheet", "path": "resources/sprites/character_sheet.png" },
+        { "name": "heart",           "path": "resources/sprites/heart.png" },
+        { "name": "swipe",           "path": "resources/sprites/swipe.png" },
+        { "name": "grave",           "path": "resources/sprites/grave.png" },
+        { "name": "ghost",           "path": "resources/sprites/ghost.png" },
+        { "name": "blood",           "path": "resources/sprites/blood.png" },
+        { "name": "blood2",          "path": "resources/sprites/blood2.png" },
+        { "name": "scroll",          "path": "resources/sprites/scroll.png" }
+    ]
+}

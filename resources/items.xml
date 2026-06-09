@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<items>
+    <comment>Reserve 'is killed by' clues for high damage items</comment>
+    <high>
+        <item>
+            <name>flamethrower</name>
+            <type>fire</type>
+            <clues>
+                <jackpot>Found a flamethrower!</jackpot>
+                <specific>Ghost died in a fire.</specific>
+                <vague>There are scorch marks in the house.</vague>
+                <worthless>Nothing was found.</worthless>
+            </clues>
+        </item>
+        <item>
+            <name>sword</name>
+            <type>blades</type>
+            <clues>
+                <jackpot>Found a blade!</jackpot>
+                <specific>Ghost's sword was very dangerous.</specific>
+                <vague>Ghost collected prized antique weapons.</vague>
+                <worthless>Nothing was found.</worthless>
+            </clues>
+        </item>
+        <item>
+            <name>hose</name>
+            <type>water</type>
+            <clues>
+                <jackpot>Found a hose!</jackpot>
+                <specific>Ghost drowned in a well.</specific>
+                <vague>Ghost never really enjoyed the water.</vague>
+                <worthless>Nothing was found.</worthless>
+            </clues>
+        </item>
+    </high>
+    <low>
+        <item>
+            <name>candle</name>
+            <type>fire</type>
+            <clues>
+                <jackpot>Found a candle!</jackpot>
+                <specific>Ghost is detered by candles.</specific>
+                <vague>Ghost is accustomed to the dark.</vague>
+                <worthless>Nothing was found.</worthless>
+            </clues>
+        </item>
+        <item>
+            <name>dagger</name>
+            <type>blades</type>
+            <clues>
+                <jackpot>Found a dagger!</jackpot>
+                <specific>Use a dagger against Ghost.</specific>
+                <vague>Be careful, Ghost lost a dagger.</vague>
+                <worthless>Nothing was found.</worthless>
+            </clues>
+        </item>
+        <item>
+            <name>bucket</name>
+            <type>water</type>
+            <clues>
+                <jackpot>Found a bucket!</jackpot>
+                <specific>Ghost does not like water.</specific>
+                <vague>Ghost didn't enjoy swimming.</vague>
+                <worthless>Nothing was found.</worthless>
+            </clues>
+        </item>
+    </low>
+    <info>
+        <blades>
+            <ARRAY>Ghost liked medieval weaponry.</ARRAY>
+            <ARRAY>Ghost can make a mean chopped salad.</ARRAY>
+            <ARRAY>Ghost only had nine fingers.</ARRAY>
+        </blades>
+        <fire>
+            <ARRAY>Ghost refused to attend BBQs.</ARRAY>
+            <ARRAY>Ghost had a painful burn.</ARRAY>
+            <ARRAY>Ghost prefered the night to the day.</ARRAY>
+        </fire>
+        <water>
+            <ARRAY>Ghost cried easily.</ARRAY>
+            <ARRAY>A terrible rainstorm scared Ghost.</ARRAY>
+            <ARRAY>Ghost's hands were moist.</ARRAY>
+        </water>
+    </info>
+</items>

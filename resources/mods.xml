@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    House Haunters mod configuration.
+
+    Drop your edits in this file, save, and re-launch the game. There is no
+    rebuild step required (this file is parsed at startup). A missing or
+    malformed file is non-fatal: the game falls back to these exact values.
+
+    Paths are resolved relative to the resources/ folder, so
+    "sprites/character_sheet.png" means "resources/sprites/character_sheet.png".
+
+    For a guided walkthrough of every key below, see MODDING.md in the
+    project root.
+-->
+<mods>
+    <!-- ============================================================ -->
+    <!-- Character-selection lobby (the "MAKE YOUR TEAM" screen)       -->
+    <!-- ============================================================ -->
+    <screen>
+        <!-- Title line at the top. Font is loaded from resources/. -->
+        <title text="MAKE YOUR TEAM"
+               font="fonts/Underdog-Regular.ttf"
+               size="24"
+               x="250" y="50"/>
+
+        <!-- Background fill color (RGB 0..255). -->
+        <background r="30" g="30" b="30"/>
+
+        <!--
+            Portrait atlas. Vanilla art is a 4x2 grid of 256x384 tiles.
+            scale=0.586 shrinks each rendered portrait to ~150x225 to fit
+            the 720x480 lobby resolution.
+        -->
+        <portraits atlas="HH_Portraits.png"
+                   tile_width="256"
+                   tile_height="384"
+                   columns="4"
+                   scale="0.586"/>
+
+        <!--
+            Layout: leftmost portrait starts at (start_x, start_y); each
+            subsequent portrait is x_spacing pixels further right.
+            Default spacing keeps the four-portrait row centered at 720px.
+        -->
+        <layout start_x="40" start_y="120" x_spacing="165"/>
+    </screen>
+
+    <!-- ============================================================ -->
+    <!-- Playable characters                                            -->
+    <!--                                                                -->
+    <!-- id is one of BRO / SIS / DAD / MOM (the in-engine enum).      -->
+    <!-- portrait_index picks a 2*N tile from HH_Portraits.png         -->
+    <!--   (so 0,2,4,6 = the four locked-in portraits).                -->
+    <!-- sprite_location picks a 2x2 quadrant of the character_sheet:  -->
+    <!--   0 = top-left (frame offset 0)                               -->
+    <!--   1 = top-right (frame offset 3)                              -->
+    <!--   2 = bottom-left (frame offset 24)                           -->
+    <!--   3 = bottom-right (frame offset 27)                          -->
+    <!-- hp / max_hp default to hp.                                    -->
+    <!-- speed_multiplier scales Character::speed (default 120).       -->
+    <!-- sprite_sheet can point at a per-character texture; vanilla    -->
+    <!--   reuses the shared atlas.                                    -->
+    <!-- ============================================================ -->
+    <characters>
+        <character id="BRO"
+                   portrait_index="0"
+                   hp="3" speed_multiplier="1.0"
+                   sprite_location="2"
+                   sprite_sheet="sprites/character_sheet.png"/>
+
+        <character id="SIS"
+                   portrait_index="2"
+                   hp="3" speed_multiplier="1.0"
+                   sprite_location="1"
+                   sprite_sheet="sprites/character_sheet.png"/>
+
+        <character id="DAD"
+                   portrait_index="4"
+                   hp="5" speed_multiplier="1.0"
+                   sprite_location="3"
+                   sprite_sheet="sprites/character_sheet.png"/>
+
+        <character id="MOM"
+                   portrait_index="6"
+                   hp="3" speed_multiplier="0.85"
+                   sprite_location="0"
+                   sprite_sheet="sprites/character_sheet.png"/>
+    </characters>
+
+    <!-- ============================================================ -->
+    <!-- The villain (ghost).                                          -->
+    <!--                                                                -->
+    <!-- sprite_sheet: texture under resources/                        -->
+    <!-- frame_width / frame_height: pixel size of each frame          -->
+    <!-- health: starting HP                                            -->
+    <!-- Each <walk> picks four frame indices into the spritesheet     -->
+    <!-- for a single direction; pattern is typically {a,b,a,c} for a  -->
+    <!-- ping-pong walk cycle.                                          -->
+    <!-- ============================================================ -->
+    <villain sprite_sheet="sprites/ghost.png"
+             frame_width="32" frame_height="48"
+             health="10">
+        <walk direction="down"  frames="1,2,1,0"/>
+        <walk direction="left"  frames="4,5,4,3"/>
+        <walk direction="right" frames="7,8,7,6"/>
+        <walk direction="up"    frames="10,11,10,9"/>
+    </villain>
+
+    <!-- ============================================================ -->
+    <!-- Audio / Music                                                  -->
+    <!--                                                                -->
+    <!-- Each <track> rebinds one audio cue to a different file under  -->
+    <!-- resources/. Supported formats are .ogg, .flac and .wav (SFML  -->
+    <!-- 2.x does not ship libmpg123, so .mp3 will NOT load).          -->
+    <!--                                                                -->
+    <!-- A track with a typo or pointing at a missing file is non-     -->
+    <!-- fatal: that single cue stays silent while everything else     -->
+    <!-- still plays. Delete any track to fall back to the vanilla     -->
+    <!-- path listed in the comment next to it.                        -->
+    <!--                                                                -->
+    <!-- Recognized ids:                                                -->
+    <!--   title_music     - title-screen background loop               -->
+    <!--   gameplay_music  - "hunt begins" cue when gameplay starts     -->
+    <!--   endgame_music   - game-over / victory sting                  -->
+    <!--   lobby_select    - thunder crack when a character is picked   -->
+    <!--   player_hurt     - hit sound played on damage                 -->
+    <!--   player_death    - death sound played when a hero is killed   -->
+    <!--   ghost_chase     - ghost lunge cue                            -->
+    <!-- ============================================================ -->
+    <audio>
+        <!-- title_music ships empty so the title screen is silent by
+             default; uncomment + supply your own loop to re-enable it.
+        <track id="title_music"    path="music/your_loop.ogg"/>
+        -->
+        <track id="gameplay_music" path="music/start.ogg"/>
+        <track id="endgame_music"  path="music/gameover.flac"/>
+        <track id="lobby_select"   path="music/thunder.flac"/>
+        <track id="player_hurt"    path="music/hurt.wav"/>
+        <track id="player_death"   path="music/dead.wav"/>
+        <track id="ghost_chase"    path="music/chase.wav"/>
+    </audio>
+</mods>

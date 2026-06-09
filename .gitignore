@@ -1,0 +1,26 @@
+.vscode
+.DS_Store
+
+# Ignore build directories
+
+Debug/
+debug/
+release/
+Release/
+profile/
+Profile/
+
+# CMake/Ninja out-of-source build trees used by this project.
+build/
+build-ninja/
+build-release/
+build-standalone/
+
+# Packaged standalone build outputs.
+dist/
+dist.zip
+
+# Engine crash/run logs and original (unprocessed) art assets.
+hh.err
+hh.out
+*.orig
