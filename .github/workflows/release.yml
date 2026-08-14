@@ -99,6 +99,7 @@ jobs:
             --desktop-file packaging/linux/house-haunters.desktop \
             --icon-file package/hh.png \
             --output appimage
+          rm linuxdeploy-x86_64.AppImage
           mv ./*.AppImage "package/${{ matrix.artifact }}.AppImage"
 
       - name: Upload artifact
