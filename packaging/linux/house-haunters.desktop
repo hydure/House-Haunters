@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=House Haunters
+Comment=Four-player haunted-house action game
+Exec=HH
+Icon=hh
+Categories=Game;ActionGame;
+Terminal=false

@@ -14,7 +14,28 @@ the ghost before it gets all of them. The ghost player is the engine.
 
 ---
 
-## Quick start (Windows)
+## Quick start
+
+### Downloading a build
+
+Executables are native to an operating system; a Windows `.exe` cannot run on
+macOS or Linux. The **Cross-platform release** GitHub Actions workflow produces
+separate ready-to-share downloads:
+
+| Recipient | Download | How to run |
+|---|---|---|
+| Windows x64 | `HouseHaunters-Windows-x64` | Double-click `HH.exe` |
+| macOS Intel | `HouseHaunters-macOS-x64` | Unzip and open `HH.app` |
+| macOS Apple Silicon | `HouseHaunters-macOS-arm64` | Unzip and open `HH.app` |
+| Linux x64 | `HouseHaunters-Linux-x64` | Mark the AppImage executable and open it |
+
+Run the workflow manually from the repository's **Actions** tab, or push a tag
+whose name starts with `v`. All assets are embedded; recipients do not need the
+repository, SFML, Python, or a separate `resources/` directory. The macOS build
+is ad-hoc signed rather than Apple-notarized, so the first launch may require
+Control-clicking the app and choosing **Open**.
+
+### Building on Windows
 
 Prerequisites:
 * **Visual Studio 2022 Community** with the Desktop C++ workload (provides MSVC 14.4x and `vcvars64.bat`).
@@ -45,7 +66,7 @@ drive CMake yourself.
 > folder) because asset paths are resolved as `../resources/...` — see
 > [include/engine/Paths.hpp](include/engine/Paths.hpp).
 
-### Building a redistributable for friends
+#### Building a Windows redistributable for friends
 
 For sharing the game with someone who doesn't have the SFML DLLs (or this
 repo at all), use the *standalone* build. It statically links SFML and bakes
@@ -59,6 +80,24 @@ resource script, so the redistributable is **literally one file**: `HH.exe`.
 ```
 
 Then send `dist\HH.exe` (≈55 MB) directly — recipient double-clicks and plays.
+
+### Building on macOS or Linux
+
+Prerequisites are CMake 3.16+, a C++14 compiler, Git, Python 3, and platform
+development packages. SFML itself is fetched at its pinned `2.6.2` tag and
+built statically. On macOS, install the Xcode command-line tools. On
+Debian/Ubuntu Linux, install the X11, XRandR, XCursor, udev, FreeType, and
+OpenGL development packages used by SFML.
+
+```bash
+chmod +x _build_standalone.sh
+./_build_standalone.sh
+```
+
+On macOS this creates a zipped, ad-hoc-signed `.app` under `dist/`. On Linux it
+creates a native compressed binary; the automated release workflow additionally
+wraps that binary and its system libraries as an AppImage for broader distro
+compatibility.
 
 Audio is provided by the vendored [miniaudio](vendor/miniaudio/) single-header
 library compiled into `HH.exe`, so there is no `openal32.dll` to ship either.
@@ -111,7 +150,10 @@ Useful CMake options:
 | `-DCMAKE_BUILD_TYPE=...` | `Debug` (in-source) / inferred from build dir name (out-of-source) | `Debug`, `Release`, or `Profile` |
 | `-DBUILD_TESTING=OFF` | `ON` | Skip the test suite entirely |
 | `-DHH_RUN_TESTS_ON_BUILD=OFF` | `ON` | Build tests but don't re-run them every build |
-| `-DSFML_ROOT=/path/to/SFML` | (uses vendored SFML 2.6.2) | Override the vendored SFML with a system install |
+| `-DHH_STATIC_SFML=ON` | `OFF` | Link SFML statically and default resource embedding to ON |
+| `-DHH_EMBED_RESOURCES=ON` | follows `HH_STATIC_SFML` | Embed assets in the native executable |
+| `-DHH_FETCH_SFML=...` | `OFF` on Windows, `ON` elsewhere | Build pinned SFML 2.6.2 source instead of requiring a platform package |
+| `-DSFML_ROOT=/path/to/SFML` | (uses vendored/fetched SFML 2.6.2) | Override dependency discovery when fetching is disabled |
 
 The whole project compiles with `/W4 /permissive-` on MSVC and `-Wall -Wextra
 -Wpedantic` on GCC/Clang; warnings are treated as bugs, not suppressed.

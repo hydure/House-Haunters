@@ -100,15 +100,25 @@ file(GLOB         EXECLIST CONFIGURE_DEPENDS "bin/*.cpp")
 # OpenAL Soft (LGPL) and force us to ship openal32.dll alongside the exe.
 option(HH_STATIC_SFML "Statically link SFML into HH.exe (for redistribution)" OFF)
 
+# The in-tree SFML package contains Windows binaries. On macOS and Linux,
+# build the same pinned SFML 2.6.2 tag from source so a clean checkout does
+# not require a separately installed SFML package. Callers can disable this
+# and supply SFML_ROOT/SFML_DIR when building fully offline.
+if(WIN32)
+    set(_fetch_sfml_default OFF)
+else()
+    set(_fetch_sfml_default ON)
+endif()
+option(HH_FETCH_SFML "Fetch and build pinned SFML 2.6.2 from source" ${_fetch_sfml_default})
+
 #####################################
 # Embed resources/ into the binary  #
 #####################################
-# When ON, the entire resources/ directory is baked into HH.exe via a
-# Win32 .rc script (RT_RCDATA resources). The runtime ResourceFS layer
-# transparently serves bytes either from disk (OFF) or from the
-# executable's resource section (ON). Combined with HH_STATIC_SFML this
-# yields a redistributable that is literally just HH.exe -- no
-# resources/ folder, no DLLs other than the OS-shipped CRT.
+# When ON, the entire resources/ directory is baked into the executable.
+# Windows uses an RT_RCDATA .rc script; macOS and Linux use generated C++
+# byte arrays. ResourceFS transparently serves bytes from disk (OFF) or the
+# executable (ON). Combined with HH_STATIC_SFML this yields a native package
+# with no separate resources/ directory or SFML shared libraries.
 #
 # Defaults ON whenever HH_STATIC_SFML is ON (the only reason to enable
 # static SFML is to ship a single .exe; embedding resources is the other
@@ -122,20 +132,13 @@ if(HH_STATIC_SFML)
 else()
     set(_embed_default OFF)
 endif()
-option(HH_EMBED_RESOURCES "Bake the resources/ directory into HH.exe via .rc/RT_RCDATA" ${_embed_default})
+option(HH_EMBED_RESOURCES "Bake resources/ into the native executable" ${_embed_default})
 
 # Embedding requires running the Python generator at configure-and-build
 # time. We prefer the vendored interpreter under vendor/python so the
 # build doesn't depend on a system Python install (the repo already
 # bundles one for test_build_atlas.py).
 if(HH_EMBED_RESOURCES)
-    if(NOT WIN32)
-        message(FATAL_ERROR
-            "HH_EMBED_RESOURCES is currently only implemented for Windows "
-            "(uses RT_RCDATA + FindResource/LockResource). Disable to build "
-            "on this platform.")
-    endif()
-
     set(_vendored_python "${HouseHaunters_SOURCE_DIR}/vendor/python/python.exe")
     if(EXISTS "${_vendored_python}")
         set(HH_PYTHON "${_vendored_python}")
@@ -153,6 +156,7 @@ if(HH_EMBED_RESOURCES)
     set(_gen_ids       "${_gen_dir}/embedded_resources_ids.h")
     set(_gen_rc        "${_gen_dir}/embedded_resources.rc")
     set(_gen_table     "${_gen_dir}/embedded_resources_table.cpp")
+    set(_gen_portable  "${_gen_dir}/embedded_resources_portable.cpp")
     set(_gen_script    "${HouseHaunters_SOURCE_DIR}/tools/generate_embedded_resources.py")
     set(_resources_dir "${HouseHaunters_SOURCE_DIR}/resources")
 
@@ -162,22 +166,30 @@ if(HH_EMBED_RESOURCES)
     file(GLOB_RECURSE _resource_files CONFIGURE_DEPENDS
         "${_resources_dir}/*")
 
+    if(WIN32)
+        set(_gen_outputs "${_gen_ids}" "${_gen_rc}" "${_gen_table}")
+        set(_gen_mode windows)
+    else()
+        set(_gen_outputs "${_gen_portable}")
+        set(_gen_mode portable)
+    endif()
+
     add_custom_command(
-        OUTPUT  "${_gen_ids}" "${_gen_rc}" "${_gen_table}"
-        COMMAND "${HH_PYTHON}" "${_gen_script}" "${_resources_dir}" "${_gen_dir}"
+        OUTPUT  ${_gen_outputs}
+        COMMAND "${HH_PYTHON}" "${_gen_script}" "${_resources_dir}" "${_gen_dir}" "${_gen_mode}"
         DEPENDS "${_gen_script}" ${_resource_files}
-        COMMENT "Generating embedded resource manifest (${_gen_dir})"
+        COMMENT "Generating ${_gen_mode} embedded resources (${_gen_dir})"
         VERBATIM)
 
     # Custom target so the generation hooks into the dependency DAG
     # cleanly -- ninja schedules it before anything that needs the
     # generated headers / sources.
     add_custom_target(hh_generate_embedded_resources
-        DEPENDS "${_gen_ids}" "${_gen_rc}" "${_gen_table}")
+        DEPENDS ${_gen_outputs})
 
     # Mark the generated files as actual source files so CMake doesn't
     # complain "file not found" while collecting target sources.
-    set_source_files_properties("${_gen_ids}" "${_gen_rc}" "${_gen_table}"
+    set_source_files_properties(${_gen_outputs}
         PROPERTIES GENERATED TRUE)
 endif()
 
@@ -195,7 +207,23 @@ endif()
 # via Windows Update); README-PLAYERS.txt links the installer for the
 # rare machine that needs it.
 
-if(HH_STATIC_SFML)
+if(HH_FETCH_SFML)
+    include(FetchContent)
+    set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build dependencies as static libraries" FORCE)
+    set(SFML_BUILD_AUDIO OFF CACHE BOOL "SFML audio is replaced by miniaudio" FORCE)
+    set(SFML_BUILD_NETWORK ON CACHE BOOL "Build SFML network" FORCE)
+    set(SFML_BUILD_EXAMPLES OFF CACHE BOOL "Do not build SFML examples" FORCE)
+    set(SFML_BUILD_DOC OFF CACHE BOOL "Do not build SFML documentation" FORCE)
+    set(SFML_BUILD_TEST_SUITE OFF CACHE BOOL "Do not build SFML tests" FORCE)
+    FetchContent_Declare(sfml
+        GIT_REPOSITORY https://github.com/SFML/SFML.git
+        GIT_TAG 2.6.2
+        GIT_SHALLOW TRUE)
+    FetchContent_MakeAvailable(sfml)
+    set(SFML_FOUND TRUE)
+    set(SFML_LIBRARIES sfml-graphics sfml-window sfml-system sfml-network)
+    set(SFML_INCLUDE_DIR "")
+elseif(HH_STATIC_SFML)
     set(SFML_STATIC_LIBRARIES TRUE)
     # Point find_package(... CONFIG) at the vendored SFMLConfig.cmake.
     # Honor an existing SFML_DIR if the caller supplied one (e.g. a
@@ -279,22 +307,37 @@ endif()
 # such as the space in "House Haunters").
 if(SRC)
     set(LIBNAME "${PROJECT_NAME}_core")
-    # When HH_EMBED_RESOURCES is ON, fold the generated path->ID table
-    # into the same static library as the rest of the engine code. The
-    # Win32 backend that calls FindResource is in
-    # src/engine/EmbeddedResources_Win32.cpp; that TU is already picked
-    # up by the SRC glob but is itself wrapped in #ifdef
-    # HH_EMBED_RESOURCES so it's a no-op when embedding is off.
+    # Fold the generated backend into the core library. Windows uses a
+    # path->resource-ID table paired with EmbeddedResources_Win32.cpp;
+    # macOS and Linux use one generated portable byte-array backend.
     if(HH_EMBED_RESOURCES)
-        list(APPEND SRC "${_gen_table}")
+        if(WIN32)
+            list(APPEND SRC "${_gen_table}")
+        else()
+            list(APPEND SRC "${_gen_portable}")
+        endif()
     endif()
     add_library(${LIBNAME} STATIC ${SRC})
     target_link_libraries(${LIBNAME} PUBLIC hh_compile_options ${SFML_LIBRARIES})
+    # miniaudio is compiled into AudioPlayer.cpp and needs these native
+    # threading, dynamic-loader, math, and Core Audio link dependencies.
+    if(UNIX)
+        find_package(Threads REQUIRED)
+        target_link_libraries(${LIBNAME} PUBLIC Threads::Threads ${CMAKE_DL_LIBS})
+        if(APPLE)
+            target_link_libraries(${LIBNAME} PUBLIC
+                "-framework CoreFoundation"
+                "-framework CoreAudio"
+                "-framework AudioToolbox")
+        else()
+            target_link_libraries(${LIBNAME} PUBLIC m)
+        endif()
+    endif()
     if(HH_EMBED_RESOURCES)
         # Make sure the generator runs before the library compiles. The
-        # dependency is technically implied by listing ${_gen_table}
-        # in SRC, but binding the custom target makes it explicit and
-        # picks up the .rc / .h as well (used by the executable below).
+        # The generated source already implies the dependency, but binding
+        # the custom target makes it explicit and also picks up the Windows
+        # .rc and header consumed by the executable below.
         add_dependencies(${LIBNAME} hh_generate_embedded_resources)
     endif()
 
@@ -322,16 +365,26 @@ endif()
 # Executables: every .cpp under bin/ becomes its own executable.
 foreach(EXEC ${EXECLIST})
     get_filename_component(EXECNAME ${EXEC} NAME_WE)
-    if(HH_EMBED_RESOURCES)
+    set(_exec_sources ${EXEC})
+    if(HH_EMBED_RESOURCES AND WIN32)
         # The generated .rc is compiled by MSVC's rc.exe and produces
         # an .res object that the linker folds into the executable's
         # resource section. It has to be on the EXECUTABLE target, not
         # the static library, because static .lib files don't carry
         # resource data.
-        add_executable(${EXECNAME} ${EXEC} "${_gen_rc}")
-        add_dependencies(${EXECNAME} hh_generate_embedded_resources)
+        list(APPEND _exec_sources "${_gen_rc}")
+    endif()
+    if(APPLE)
+        add_executable(${EXECNAME} MACOSX_BUNDLE ${_exec_sources})
+        set_target_properties(${EXECNAME} PROPERTIES
+            MACOSX_BUNDLE_BUNDLE_NAME "House Haunters"
+            MACOSX_BUNDLE_GUI_IDENTIFIER "io.github.hydure.house-haunters"
+            MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0")
     else()
-        add_executable(${EXECNAME} ${EXEC})
+        add_executable(${EXECNAME} ${_exec_sources})
+    endif()
+    if(HH_EMBED_RESOURCES)
+        add_dependencies(${EXECNAME} hh_generate_embedded_resources)
     endif()
     target_link_libraries(${EXECNAME} PRIVATE hh_compile_options ${SFML_LIBRARIES})
     if(SRC)

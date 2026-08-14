@@ -1,10 +1,9 @@
 """Unit tests for tools/generate_embedded_resources.py.
 
-Pin the contract that the generator (a) walks ``resources/`` and emits
-the three Win32 .rc / header / table files cleanly, (b) skips the well-
-known artist sources, and (c) hard-fails on filenames that genuinely
-can't be embedded (rather than silently dropping them, which is how the
-original ``ak&#039;s_assets.png`` bug went undiagnosed for a while).
+Pin the contract that the generator (a) emits both Win32 and portable
+resource backends cleanly, (b) skips known artist sources, and (c) hard-fails
+on filenames that genuinely can't be embedded rather than silently dropping
+them.
 
 Runs via either pytest (``pytest tests/test_generate_embedded_resources.py``)
 or directly (``python tests/test_generate_embedded_resources.py``).
@@ -147,6 +146,19 @@ class WriteOutputsTests(unittest.TestCase):
         self.assertIn("joe's.png", text)
         self.assertIn("fonts/title.ttf", text)
         self.assertIn("items.xml", text)
+
+    def test_portable_cpp_contains_bytes_table_and_lookup(self) -> None:
+        files = gen.gather_resources(self.resources)
+        out = self.outdir / "embedded_resources_portable.cpp"
+        gen.write_portable_cpp(out, files, self.resources)
+        text = out.read_text()
+
+        self.assertIn("alignas(16) const unsigned char kData0[]", text)
+        self.assertIn("0x89, 0x50, 0x4e, 0x47", text)
+        self.assertIn("fonts/title.ttf", text)
+        self.assertIn("items.xml", text)
+        self.assertIn("bool find(const char* posix_relative_path", text)
+        self.assertNotIn('#include "embedded_resources_ids.h"', text)
 
 
 if __name__ == "__main__":

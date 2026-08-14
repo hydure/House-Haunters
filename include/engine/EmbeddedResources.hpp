@@ -6,9 +6,9 @@
 // EmbeddedResources.hpp
 // ---------------------
 //
-// Internal interface between the generated table (path -> Win32 resource
-// ID) and the runtime ResourceFS dispatcher. Only compiled when the
-// HH_EMBED_RESOURCES build option is ON.
+// Internal interface between a generated resource table and the runtime
+// ResourceFS dispatcher. Windows maps IDs to RT_RCDATA; macOS and Linux use
+// compiler-neutral byte arrays. Only compiled when HH_EMBED_RESOURCES is ON.
 //
 // This header should NOT be included from game code -- call
 // hh::ResourceFS::readAll() instead. The only direct consumer is
@@ -23,7 +23,7 @@ namespace hh { namespace embedded {
 // directory, e.g. ``"fonts/Underdog-Regular.ttf"``.
 struct Entry {
     const char* path;
-    int         id;     // Win32 RT_RCDATA resource identifier.
+    int         id;     // Win32 RT_RCDATA ID; zero on portable backends.
 };
 
 // Returns the generated table (sorted ascending by ``path``) and its

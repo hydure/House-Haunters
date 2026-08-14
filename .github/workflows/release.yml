@@ -1,0 +1,111 @@
+name: Cross-platform release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows x64
+            os: windows-latest
+            platform: windows
+            artifact: HouseHaunters-Windows-x64
+          - name: macOS Intel
+            os: macos-15-intel
+            platform: macos
+            artifact: HouseHaunters-macOS-x64
+          - name: macOS Apple Silicon
+            os: macos-15
+            platform: macos
+            artifact: HouseHaunters-macOS-arm64
+          - name: Linux x64
+            os: ubuntu-22.04
+            platform: linux
+            artifact: HouseHaunters-Linux-x64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v6
+
+      - name: Enable MSVC
+        if: matrix.platform == 'windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install Linux build dependencies
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libx11-dev libxrandr-dev libxcursor-dev libudev-dev libfreetype6-dev libgl1-mesa-dev
+
+      - name: Configure Windows
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: >-
+          cmake -S . -B build-ci -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DHH_STATIC_SFML=ON
+          -DHH_EMBED_RESOURCES=ON
+          -DBUILD_TESTING=OFF
+
+      - name: Configure macOS or Linux
+        if: matrix.platform != 'windows'
+        run: >-
+          cmake -S . -B build-ci -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DHH_STATIC_SFML=ON
+          -DHH_FETCH_SFML=ON
+          -DHH_EMBED_RESOURCES=ON
+          -DBUILD_TESTING=OFF
+
+      - name: Build
+        run: cmake --build build-ci --target HH --parallel
+
+      - name: Package Windows
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force package | Out-Null
+          Copy-Item build-ci/HH.exe package/HH.exe
+
+      - name: Package macOS
+        if: matrix.platform == 'macos'
+        run: |
+          codesign --force --deep --sign - build-ci/HH.app
+          mkdir package
+          ditto -c -k --sequesterRsrc --keepParent build-ci/HH.app "package/${{ matrix.artifact }}.zip"
+
+      - name: Build Linux AppImage
+        if: matrix.platform == 'linux'
+        run: |
+          mkdir -p AppDir/usr/bin package
+          cp build-ci/HH AppDir/usr/bin/HH
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage
+          LINUXDEPLOY_OUTPUT_VERSION=x64 ./linuxdeploy-x86_64.AppImage --appimage-extract-and-run \
+            --appdir AppDir \
+            --executable AppDir/usr/bin/HH \
+            --desktop-file packaging/linux/house-haunters.desktop \
+            --icon-file resources/hh.png \
+            --output appimage
+          mv ./*.AppImage "package/${{ matrix.artifact }}.AppImage"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: package/*
+          if-no-files-found: error

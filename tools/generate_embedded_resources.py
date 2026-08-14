@@ -3,10 +3,9 @@
 generate_embedded_resources.py
 ==============================
 
-Walks the project ``resources/`` directory and emits three files into the
-CMake build tree so the entire resource bundle can be linked into the
-final ``HH.exe`` (no on-disk resources/ folder required for the
-redistributable build):
+Walks the project ``resources/`` directory and emits platform-specific files
+into the CMake build tree so the entire resource bundle can be linked into the
+final executable (no on-disk resources/ folder required):
 
   1. ``embedded_resources_ids.h``  -- one ``#define`` per resource,
                                        used by both the .rc and the table.
@@ -19,6 +18,11 @@ redistributable build):
                                           ``"fonts/Underdog-Regular.ttf"``)
                                           to its numeric ID.
 
+On macOS and Linux it instead emits ``embedded_resources_portable.cpp``, a
+standard C++14 translation unit containing the bytes and the same lookup API.
+This is deliberately compiler/linker neutral so Mach-O and ELF builds share
+the same runtime ResourceFS code as Windows.
+
 At runtime ``hh::ResourceFS`` looks up the path in the table, calls
 ``FindResourceA`` + ``LoadResource`` + ``LockResource`` to obtain a
 pointer into the .exe's mapped image (zero-copy), and hands those bytes
@@ -27,7 +31,7 @@ to ``sf::Texture::loadFromMemory`` / ``sf::Font::loadFromMemory`` /
 
 Usage (invoked by CMake):
 
-    python generate_embedded_resources.py <resources_dir> <output_dir>
+    python generate_embedded_resources.py <resources_dir> <output_dir> [windows|portable]
 
 Skipped files (artist sources / docs that have no business shipping):
 
@@ -206,14 +210,103 @@ def write_table_cpp(out_path: Path, files: list[Path]) -> None:
     out_path.write_text("\n".join(lines), encoding="ascii")
 
 
+def write_portable_cpp(out_path: Path,
+                       files: list[Path],
+                       resources_dir: Path) -> None:
+    """Emit a self-contained C++14 resource backend for Mach-O and ELF.
+
+    Native linker-specific approaches would require separate implementations
+    for each object format. Plain C++ is larger while compiling, but produces
+    compact binary data and works with AppleClang, Clang, and GCC.
+    """
+    lines = [
+        "// GENERATED FILE -- do not edit. See tools/generate_embedded_resources.py",
+        "// Portable embedded-resource backend for macOS and Linux.",
+        "",
+        '#include "engine/EmbeddedResources.hpp"',
+        "",
+        "#include <cstring>",
+        "",
+        "namespace hh { namespace embedded {",
+        "",
+        "namespace {",
+    ]
+
+    sizes: list[int] = []
+    for i, rel in enumerate(files):
+        payload = (resources_dir / rel).read_bytes()
+        sizes.append(len(payload))
+        # Standard C++ forbids a zero-length array. Keep a one-byte sentinel
+        # while recording the real size as zero in kPayloads below.
+        encoded = payload if payload else b"\x00"
+        lines.append(f"alignas(16) const unsigned char kData{i}[] = {{")
+        for start in range(0, len(encoded), 16):
+            chunk = encoded[start:start + 16]
+            lines.append("    " + ", ".join(f"0x{byte:02x}" for byte in chunk) + ",")
+        lines.append("};")
+        lines.append("")
+
+    lines.extend([
+        "struct Payload {",
+        "    const unsigned char* data;",
+        "    std::size_t size;",
+        "};",
+        "",
+        "constexpr Entry kTable[] = {",
+    ])
+    for rel in files:
+        lines.append(f"    {{ {cpp_string_literal(rel.as_posix())}, 0 }},")
+    lines.extend([
+        "};",
+        "",
+        "const Payload kPayloads[] = {",
+    ])
+    for i, size in enumerate(sizes):
+        lines.append(f"    {{ kData{i}, {size}u }},")
+    lines.extend([
+        "};",
+        "",
+        "constexpr std::size_t kCount = sizeof(kTable) / sizeof(kTable[0]);",
+        "}  // namespace",
+        "",
+        "const Entry* table() noexcept { return kTable; }",
+        "std::size_t table_size() noexcept { return kCount; }",
+        "",
+        "bool find(const char* posix_relative_path,",
+        "          const void** data,",
+        "          std::size_t* size) noexcept",
+        "{",
+        "    if (!posix_relative_path || !data || !size) return false;",
+        "    for (std::size_t i = 0; i < kCount; ++i) {",
+        "        if (std::strcmp(kTable[i].path, posix_relative_path) == 0) {",
+        "            *data = kPayloads[i].data;",
+        "            *size = kPayloads[i].size;",
+        "            return true;",
+        "        }",
+        "    }",
+        "    return false;",
+        "}",
+        "",
+        "}}  // namespace hh::embedded",
+        "",
+    ])
+    out_path.write_text("\n".join(lines), encoding="ascii")
+
+
 def main(argv: list[str]) -> int:
-    if len(argv) != 3:
+    if len(argv) not in (3, 4):
         sys.stderr.write(
-            "usage: generate_embedded_resources.py <resources_dir> <output_dir>\n")
+            "usage: generate_embedded_resources.py <resources_dir> <output_dir> "
+            "[windows|portable]\n")
         return 2
 
     resources_dir = Path(argv[1])
     output_dir    = Path(argv[2])
+    mode = argv[3] if len(argv) == 4 else "windows"
+
+    if mode not in ("windows", "portable"):
+        sys.stderr.write(f"error: unknown output mode: {mode}\n")
+        return 2
 
     if not resources_dir.is_dir():
         sys.stderr.write(f"error: resources dir not found: {resources_dir}\n")
@@ -226,15 +319,19 @@ def main(argv: list[str]) -> int:
         sys.stderr.write(f"error: no resources found under {resources_dir}\n")
         return 1
 
-    ids_h  = output_dir / "embedded_resources_ids.h"
-    rc     = output_dir / "embedded_resources.rc"
-    table  = output_dir / "embedded_resources_table.cpp"
+    if mode == "windows":
+        ids_h = output_dir / "embedded_resources_ids.h"
+        rc    = output_dir / "embedded_resources.rc"
+        table = output_dir / "embedded_resources_table.cpp"
 
-    write_ids_header(ids_h,  files)
-    write_rc_file(rc,        files, resources_dir)
-    write_table_cpp(table,   files)
+        write_ids_header(ids_h, files)
+        write_rc_file(rc, files, resources_dir)
+        write_table_cpp(table, files)
+    else:
+        portable = output_dir / "embedded_resources_portable.cpp"
+        write_portable_cpp(portable, files, resources_dir)
 
-    print(f"embedded {len(files)} resource(s) -> {output_dir}")
+    print(f"embedded {len(files)} resource(s) ({mode}) -> {output_dir}")
     return 0
 
 
