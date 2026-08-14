@@ -3,6 +3,8 @@
 #include "engine/Paths.hpp"
 #include "engine/Constants.hpp"
 
+#include <cmath>
+
 void GametitleScreen::init()
 {
     // Stop any previous playback so re-init (e.g. returning here after
