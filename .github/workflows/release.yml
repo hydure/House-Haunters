@@ -90,14 +90,14 @@ jobs:
         run: |
           mkdir -p AppDir/usr/bin package
           cp build-ci/HH AppDir/usr/bin/HH
-          convert resources/hh.png -resize 256x256 -background transparent -gravity center -extent 256x256 appimage-icon.png
+          convert resources/hh.png -resize 256x256 -background transparent -gravity center -extent 256x256 build-ci/hh.png
           wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           chmod +x linuxdeploy-x86_64.AppImage
           LINUXDEPLOY_OUTPUT_VERSION=x64 ./linuxdeploy-x86_64.AppImage --appimage-extract-and-run \
             --appdir AppDir \
             --executable AppDir/usr/bin/HH \
             --desktop-file packaging/linux/house-haunters.desktop \
-            --icon-file appimage-icon.png \
+            --icon-file build-ci/hh.png \
             --output appimage
           rm linuxdeploy-x86_64.AppImage
           mv ./*.AppImage "package/${{ matrix.artifact }}.AppImage"
