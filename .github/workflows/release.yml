@@ -36,10 +36,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@v6
+      - uses: actions/checkout@v5
 
       - name: Enable MSVC
         if: matrix.platform == 'windows'

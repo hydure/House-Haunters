@@ -140,15 +140,13 @@ option(HH_EMBED_RESOURCES "Bake resources/ into the native executable" ${_embed_
 # bundles one for test_build_atlas.py).
 if(HH_EMBED_RESOURCES)
     set(_vendored_python "${HouseHaunters_SOURCE_DIR}/vendor/python/python.exe")
-    if(EXISTS "${_vendored_python}")
+    if(WIN32 AND EXISTS "${_vendored_python}")
         set(HH_PYTHON "${_vendored_python}")
     else()
         find_program(HH_PYTHON NAMES python3 python)
         if(NOT HH_PYTHON)
             message(FATAL_ERROR
-                "HH_EMBED_RESOURCES needs Python and the vendored "
-                "vendor/python/python.exe was not found. Either restore it "
-                "or install Python and re-run cmake.")
+                "HH_EMBED_RESOURCES needs Python 3. Install it and re-run cmake.")
         endif()
     endif()
 
