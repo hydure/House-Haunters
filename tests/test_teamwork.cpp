@@ -5,6 +5,7 @@
 #include "components/EntityGroup.hpp"
 #include "game/characters/Character.hpp"
 #include "game/characters/VillainDirector.hpp"
+#include "game/objects/Clue.hpp"
 #include "game/rooms/Room.hpp"
 
 namespace {
