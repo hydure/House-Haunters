@@ -1,5 +1,7 @@
 #include "game/rooms/RoomGroup.hpp"
+#include <algorithm>
 #include <array>
+#include <cstdlib>
 #include "engine/RandomUtil.hpp"
 #include "engine/Constants.hpp"
 
@@ -15,16 +17,43 @@ bool isContained(const sf::FloatRect& inner, const sf::FloatRect& outer)
 }
 } // namespace
 
+RoomGroup::Zone RoomGroup::zoneForOffset(int dx, int dy)
+{
+    if (std::abs(dx) + std::abs(dy) <= 2) return Zone::HEART;
+    if (dy > 0 && std::abs(dy) >= std::abs(dx)) return Zone::CELLAR;
+    if (dx < 0) return Zone::SERVICE;
+    return Zone::QUARTERS;
+}
+
+int RoomGroup::roomTypeFor(Zone zone, int roll)
+{
+    static const std::array<int, 4> heart = {{2, 4, 5, 7}};
+    static const std::array<int, 4> service = {{1, 6, 8, 4}};
+    static const std::array<int, 4> quarters = {{10, 11, 12, 5}};
+    static const std::array<int, 4> cellar = {{3, 8, 9, 1}};
+    const int index = ((roll % 4) + 4) % 4;
+    switch (zone) {
+        case Zone::HEART:    return heart[static_cast<std::size_t>(index)];
+        case Zone::SERVICE:  return service[static_cast<std::size_t>(index)];
+        case Zone::QUARTERS: return quarters[static_cast<std::size_t>(index)];
+        case Zone::CELLAR:   return cellar[static_cast<std::size_t>(index)];
+    }
+    return 2;
+}
+
 void RoomGroup::generateRoomGrid(int roomCount)
 {
+    roomCount = std::max(1, std::min(roomCount, kHouseWidth * kHouseHeight));
     totalRooms = roomCount;
     // Clear any rooms left over from a previous game. Without this a second
     // game would accumulate rooms (and their stale cluesInRoom pointers)
     // on top of the previous house.
     this->rooms.clear();
+    this->num_rooms = 0;
 
     // -1 = unused, 0 = candidate, 1 = placed room
     std::array<std::array<int, kHouseHeight>, kHouseWidth> roomGrid{};
+    std::array<std::array<int, kHouseHeight>, kHouseWidth> roomTypes{};
     for (auto& col : roomGrid) {
         col.fill(-1);
     }
@@ -39,7 +68,7 @@ void RoomGroup::generateRoomGrid(int roomCount)
     roomGrid[cx][cy + 1] = 0;
 
     int roomsGenerated = 1;
-    while (roomsGenerated != roomCount) {
+    while (roomsGenerated < roomCount) {
         int x = randomInt(kHouseWidth);
         int y = randomInt(kHouseHeight);
         if (roomGrid[x][y] != 0) continue;
@@ -62,7 +91,20 @@ void RoomGroup::generateRoomGrid(int roomCount)
             currRoom->rect.setPosition(
                 static_cast<float>(EngineConstants::kRoomGridStrideX * i),
                 static_cast<float>(EngineConstants::kRoomGridStrideY * j));
-            currRoom->setRoomType(1 + randomInt(12));
+            const Zone zone = zoneForOffset(i - cx, j - cy);
+            const int roll = randomInt(4);
+            int roomType = (i == cx && j == cy) ? 2 : roomTypeFor(zone, roll);
+            for (int offset = 0; offset < 4 && !(i == cx && j == cy); ++offset) {
+                const int candidate = roomTypeFor(zone, roll + offset);
+                const bool repeatsLeft = i > 0 && roomTypes[i - 1][j] == candidate;
+                const bool repeatsAbove = j > 0 && roomTypes[i][j - 1] == candidate;
+                if (!repeatsLeft && !repeatsAbove) {
+                    roomType = candidate;
+                    break;
+                }
+            }
+            roomTypes[i][j] = roomType;
+            currRoom->setRoomType(roomType);
             currRoom->isDoor = false;
             currRoom->setPosition(currRoom->rect.getPosition());
             currRoom->init();

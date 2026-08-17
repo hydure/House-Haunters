@@ -34,6 +34,7 @@ test. Set `-DHH_RUN_TESTS_ON_BUILD=OFF` to build-only.
 | `test_network_manager.cpp` | `NetworkManager` env-var parsing, tick edge buffering, slot remapping |
 | `test_paths.cpp` | `Paths::resource()` resolution |
 | `test_random.cpp` | `PlantSeeds` + `randomInt` distribution invariants |
+| `test_room_generation.cpp` | Pure mansion-zone classification and themed room pools |
 | `test_screen_flow.cpp` | `GameEngine::changeGameScreen`, subscription cleanup, re-entry init |
 | `test_spectator.cpp` | `PlayerView` target follow + spectator cycling + GAME OVER contract |
 | `test_villain_ai.cpp` | Alien: Isolation-style two-tier AI: target eligibility, difficulty-scaled ping cadence, cached hints, base speeds, timed HAUNT escalation, and every character's endgame passive. |

@@ -8,7 +8,7 @@ Implementations for the procedural mansion declared in
 | File | Header | Notes |
 |---|---|---|
 | `Room.cpp` | [Room.hpp](../../../include/game/rooms/Room.hpp) | A single room tile. Sets its background sprite from a PNG under [resources/roompng/](../../../resources/roompng/) and exposes its hitbox / `room_setup` string for upstream queries. |
-| `RoomGroup.cpp` | [RoomGroup.hpp](../../../include/game/rooms/RoomGroup.hpp) | Owning collection of rooms plus the spatial queries (`getRoom(index)`, `getRoom(hbox)`, `isInsideRoom(rect)`, `roomCount()`). Built by `GameplayScreen::init` from a procedurally-chosen list of room types laid out on a grid. |
+| `RoomGroup.cpp` | [RoomGroup.hpp](../../../include/game/rooms/RoomGroup.hpp) | Owning collection and spatial queries. The connected grid is divided into a throne-centered heart, service wing, private quarters, and cellar band; each zone draws from a themed room pool and avoids immediate visual repeats. |
 
 ## Layout constants
 

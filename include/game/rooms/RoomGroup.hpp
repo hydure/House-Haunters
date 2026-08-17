@@ -17,7 +17,16 @@
 class RoomGroup : public GameObject
 {
 public:
+    enum class Zone {
+        HEART,
+        SERVICE,
+        QUARTERS,
+        CELLAR
+    };
+
     void generateRoomGrid(int roomCount);
+    static Zone zoneForOffset(int dx, int dy);
+    static int roomTypeFor(Zone zone, int roll);
     bool isInsideRoom(sf::FloatRect hbox);
     bool inSameRoom(sf::FloatRect box1, sf::FloatRect box2);
     sf::FloatRect getRoom(sf::FloatRect hbox);
