@@ -280,6 +280,7 @@ void PauseMenu::buildControlsPage()
         { "KEYBOARD",                          true  },
         { "Move .......... Arrow Keys",        false },
         { "Attack ........ X    Read clue . Z", false },
+        { "Cycle weapon .. V",                 false },
     };
     if (broActive) {
         rows.push_back({ "BRO sprint .... C    Menu ...... Esc", false });
@@ -291,6 +292,7 @@ void PauseMenu::buildControlsPage()
     rows.push_back({ "GAMEPAD",                         true  });
     rows.push_back({ "Move .......... D-Pad / Stick",   false });
     rows.push_back({ "Attack ........ B    Read clue . A", false });
+    rows.push_back({ "Cycle weapon .. Y",                  false });
     if (broActive) {
         rows.push_back({ "BRO sprint .... X    Menu ...... Start", false });
     }

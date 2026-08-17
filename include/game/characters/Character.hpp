@@ -9,6 +9,7 @@
 #include "components/Hitbox.hpp"
 #include "game/rooms/Room.hpp"
 #include "game/rooms/RoomGroup.hpp"
+#include "game/WeaponSystem.hpp"
 #include "components/EntityGroup.hpp"
 ////////////////
 // Character.hpp
@@ -99,6 +100,7 @@ public:
     // every villain swing this character lands. Tests use this to
     // pin MOM_MATERNAL_FURY_BONUS.
     int currentStrengthBonus() const { return strengthBonus; }
+    WeaponSystem::Type selectedWeapon() const { return selectedWeapon_; }
     // Read-only accessor for DAD's current maxHealth. Tests use
     // this to pin DAD_KEEPS_TAKING_MULTIPLIER.
     int currentMaxHealth() const { return maxHealth; }
@@ -177,6 +179,7 @@ public:
     // raise this; the mechanism is generic so other future powers
     // can share it without further changes.
     int strengthBonus = 0;
+    WeaponSystem::Type selectedWeapon_ = WeaponSystem::Type::NONE;
 
 protected:
     int gamepad_index = -1;
@@ -188,6 +191,7 @@ protected:
                         sf::Vector2f dir,
                         bool blocked);
     void openHeldClue();
+    void cycleWeapon();
 
     // Base attributes
     double speed = 120;

@@ -5,6 +5,7 @@
 #include "engine/ClueReader.hpp"
 #include "engine/NetworkManager.hpp"
 #include "game/InvestigationJournal.hpp"
+#include "game/WeaponSystem.hpp"
 #include "game/characters/Character.hpp"
 #include "game/characters/Villain.hpp"
 #include "game/objects/Clue.hpp"
@@ -157,6 +158,8 @@ void GameplayScreen::createClues()
     // RNG already seeded in HouseHauntersGame::init via PlantSeeds.
     reader.readFile(Paths::resource("items.xml"));
     reader.selectItems();
+    WeaponSystem::instance().configure(
+        reader.getItemHigh().type, reader.getItemLow().type);
 
     for (const auto& r : group.rooms) {
         const sf::Vector2f roomPos = r->rect.getPosition();

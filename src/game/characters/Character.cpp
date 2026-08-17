@@ -491,6 +491,9 @@ void Character::onGamepadEvent(GamepadEvent e)
             if (e.button == "X" && character == Config::CHARACTER::BRO) {
                 this->speed *= 2;
             }
+            if (e.button == "Y") {
+                cycleWeapon();
+            }
             if (e.button == "A" && !readClue && this->currentClue != nullptr) {
                 openHeldClue();
             }
@@ -520,8 +523,7 @@ void Character::pressDirection(SpriteAnimation* anim,
 }
 
 // A-button press while standing on an unread clue: flip into read mode,
-// apply MOM's hunch upgrade, open the clue, and pick up the jackpot item
-// (with DAD's extra damage bonus) if the rolled clue happens to be it.
+// apply MOM's hunch upgrade, open the clue, and add it to the shared case file.
 void Character::openHeldClue()
 {
     readClue = true;
@@ -546,16 +548,14 @@ void Character::openHeldClue()
     }
     InvestigationJournal::instance().discover(
         this->currentClue->setClue, tier, player_number);
+}
 
-    if (this->currentClue->setClue == this->currentClue->clueJackpot
-        && !hasItem
-        && !this->currentClue->activatedItem) {
-        itemDamage = (this->currentClue->highLow == 1) ? 5 : 3;
-        // DAD swings with extra force when wielding the jackpot weapon --
-        // his "strong arm" ability.
-        if (character == Config::CHARACTER::DAD) {
-            itemDamage += 2;
-        }
-        hasItem = true;
+void Character::cycleWeapon()
+{
+    selectedWeapon_ = WeaponSystem::next(selectedWeapon_);
+    itemDamage = WeaponSystem::instance().damageFor(selectedWeapon_);
+    if (character == Config::CHARACTER::DAD && itemDamage > 1) {
+        itemDamage += 2;
     }
+    hasItem = true;
 }

@@ -270,7 +270,7 @@ plugged in mid-lobby are detected automatically.
 | Interact / read clue | `Z` | `X` (Cross) | `A` |
 | Attack | `X` | `Circle` | `B` |
 | Sprint (Brother only) | `C` | `Square` | `X` |
-| End yourself | `V` | `Triangle` | `Y` |
+| Cycle weapon | `V` | `Triangle` | `Y` |
 | Menu / back | `Esc` | `Options` / `Start` | `Start` |
 
 In spectator mode (after your character dies), LEFT/RIGHT cycle through

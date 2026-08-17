@@ -210,6 +210,11 @@ void PlayerView::setView(sf::FloatRect dimensions, sf::FloatRect viewport)
     casebookText.setCharacterSize(numPlayers >= 2 ? 11 : 13);
     casebookText.setFillColor(sf::Color(235, 225, 190));
     casebookText.setPosition(casebookBg.getPosition() + sf::Vector2f(6.f, 3.f));
+
+    weaponText.setFont(*ResourceManager::getFont(Paths::resource("fonts/Underdog-Regular.ttf")));
+    weaponText.setCharacterSize(numPlayers >= 2 ? 12 : 14);
+    weaponText.setFillColor(sf::Color::White);
+    weaponText.setPosition(dimensions.width - 150.f, dimensions.height - 38.f);
 }
 
 void PlayerView::onDraw(sf::RenderTarget& target, sf::RenderStates /*states*/) const
@@ -277,6 +282,20 @@ void PlayerView::onDraw(sf::RenderTarget& target, sf::RenderStates /*states*/) c
     casebookText.setString(casebook);
     target.draw(casebookBg);
     target.draw(casebookText);
+
+    sf::Color weaponColor(110, 110, 110);
+    switch (follow->selectedWeapon()) {
+        case WeaponSystem::Type::FIRE:   weaponColor = sf::Color(220, 75, 45); break;
+        case WeaponSystem::Type::BLADES: weaponColor = sf::Color(190, 200, 210); break;
+        case WeaponSystem::Type::WATER:  weaponColor = sf::Color(55, 145, 220); break;
+        case WeaponSystem::Type::NONE: break;
+    }
+    itemBar.setFillColor(weaponColor);
+    weaponText.setString(std::string("Y: ")
+        + WeaponSystem::name(follow->selectedWeapon())
+        + "  DMG " + std::to_string(follow->itemDamage));
+    target.draw(itemBar);
+    target.draw(weaponText);
 
     // Clue text box
     auto* character = follow.get();

@@ -79,7 +79,7 @@ protected:
     int spectatorTarget_ = -1;
     sf::View v;
     sf::View HUD;
-    sf::RectangleShape itemBar;
+    mutable sf::RectangleShape itemBar;
     sf::Texture heartTexture;
     sf::RectangleShape pain;
     sf::Clock clock;
@@ -94,6 +94,7 @@ protected:
     mutable bool clueTextReady = false;
     mutable sf::RectangleShape casebookBg;
     mutable sf::Text casebookText;
+    mutable sf::Text weaponText;
 
     // RAII handle for the gamepad listener registered in init(); removed
     // automatically when the PlayerView is destroyed.
