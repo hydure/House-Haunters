@@ -36,7 +36,7 @@ test. Set `-DHH_RUN_TESTS_ON_BUILD=OFF` to build-only.
 | `test_random.cpp` | `PlantSeeds` + `randomInt` distribution invariants |
 | `test_screen_flow.cpp` | `GameEngine::changeGameScreen`, subscription cleanup, re-entry init |
 | `test_spectator.cpp` | `PlayerView` target follow + spectator cycling + GAME OVER contract |
-| `test_villain_ai.cpp` | Alien: Isolation-style two-tier AI: `VillainDirector` eligibility rules (including SIS-stealth lapse when she's the last alive); difficulty-scaled ping cadence (EASY 8s / NORMAL 4s / HARD 1.5s); cached hint is stale between pings; ghost wander/chase speeds both strictly slower than the slowest player; SIS *Final Girl* speed boost; MOM *Maternal Fury* strength bonus; BRO *Man of the House* strength bonus; DAD *It Just Keeps Taking and Taking* health doubling and *Papa Bear* per-child strength stack |
+| `test_villain_ai.cpp` | Alien: Isolation-style two-tier AI: target eligibility, difficulty-scaled ping cadence, cached hints, base speeds, timed HAUNT escalation, and every character's endgame passive. |
 | `test_villain_chase.cpp` | `Villain::nearestTargetCharacter` (now a thin wrapper around the Director) picks closest live player; skips dead/invul/stationary-SIS |
 | `test_build_atlas.py` | Optional Python test for [tools/build_atlas.py](../tools/build_atlas.py) (skipped if no `python3`) |
 

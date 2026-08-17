@@ -13,9 +13,8 @@
 //     and KEEPS the lock until that character leaves the room (or
 //     dies / becomes invul / becomes stealth-invisible). A second
 //     character entering the room cannot steal the chase mid-stride.
-//   * Both wanderSpeed() and chaseSpeed() are strictly less than the
-//     slowest player character's base speed, so a skilled player can
-//     kite the ghost indefinitely by maintaining maximum movement.
+//   * Base wander/chase speeds are below the slowest player, while
+//     deterministic HAUNT thresholds eventually increase pressure.
 //
 // As with the existing villain test, these cases bypass init() so
 // they don't need any sprite / sound / font resources -- only the
@@ -256,6 +255,32 @@ TEST_CASE("ghost chase speed is greater than wander speed")
     // Sanity check: chase still has to be a meaningful boost over the
     // wander baseline, even if both are below player speed.
     CHECK(Villain::chaseSpeed() > Villain::wanderSpeed());
+}
+
+TEST_CASE("haunt pressure escalates at deterministic round thresholds")
+{
+    CHECK_EQ(Villain::hauntLevelFor(0.f), 0);
+    CHECK_EQ(Villain::hauntLevelFor(89.9f), 0);
+    CHECK_EQ(Villain::hauntLevelFor(90.f), 1);
+    CHECK_EQ(Villain::hauntLevelFor(180.f), 2);
+    CHECK(Villain::pressureMultiplierFor(2)
+          > Villain::pressureMultiplierFor(1));
+}
+
+TEST_CASE("haunt pressure shortens Director ping cadence")
+{
+    Villain v;
+    v.setDifficulty(Config::NORMAL);
+    CHECK_EQ(v.pingInterval(), 4.f);
+
+    v.advanceHauntTimer(90.f);
+    CHECK_EQ(v.hauntLevel(), 1);
+    CHECK(v.pingInterval() < 4.f);
+
+    const float levelOneInterval = v.pingInterval();
+    v.advanceHauntTimer(90.f);
+    CHECK_EQ(v.hauntLevel(), 2);
+    CHECK(v.pingInterval() < levelOneInterval);
 }
 
 TEST_CASE("Director is reseated on the entity group the villain owns")

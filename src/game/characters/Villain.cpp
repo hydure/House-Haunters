@@ -68,6 +68,9 @@ void Villain::init()
     // fires a fresh ping (giving the ghost an initial wander hint
     // instead of pingIntervalSec_ seconds of blind wandering).
     director_.setEntities(entity_group);
+    hauntElapsedSec_ = 0.f;
+    hauntLevel_ = 0;
+    pingIntervalSec_ = basePingIntervalSec_;
     pingTimerSec_   = pingIntervalSec_;
     hasDirectorHint_ = false;
     lockedCharacter_ = nullptr;
@@ -91,20 +94,49 @@ float Villain::pingIntervalFor(Config::DIFFICULTY d)
     return 4.0f;
 }
 
+int Villain::hauntLevelFor(float elapsedSeconds)
+{
+    if (elapsedSeconds >= 180.f) return 2;
+    if (elapsedSeconds >= 90.f) return 1;
+    return 0;
+}
+
+double Villain::pressureMultiplierFor(int hauntLevel)
+{
+    if (hauntLevel >= 2) return 1.12;
+    if (hauntLevel == 1) return 1.06;
+    return 1.0;
+}
+
 void Villain::setDifficulty(Config::DIFFICULTY d)
 {
-    pingIntervalSec_ = pingIntervalFor(d);
+    basePingIntervalSec_ = pingIntervalFor(d);
+    pingIntervalSec_ = basePingIntervalSec_;
+}
+
+void Villain::advanceHauntTimer(float dt)
+{
+    if (dt > 0.f) {
+        hauntElapsedSec_ += dt;
+    }
+    hauntLevel_ = hauntLevelFor(hauntElapsedSec_);
+    pingIntervalSec_ = basePingIntervalSec_ * (1.f - 0.2f * hauntLevel_);
+
+    const double multiplier = pressureMultiplierFor(hauntLevel_);
+    speed = fastSpeed
+        ? chaseSpeed() * multiplier
+        : wanderSpeed() * (1.0 + 0.03 * hauntLevel_);
 }
 
 void Villain::enterWanderMode()
 {
-    speed     = wanderSpeed();
+    speed     = wanderSpeed() * (1.0 + 0.03 * hauntLevel_);
     fastSpeed = false;
 }
 
 void Villain::enterChaseMode()
 {
-    speed     = chaseSpeed();
+    speed     = chaseSpeed() * pressureMultiplierFor(hauntLevel_);
     fastSpeed = true;
 }
 
@@ -132,6 +164,7 @@ void Villain::onUpdate(float dt)
     // the all-knowing AI "who's closest?" and caches the answer as a
     // wander hint. The Villain itself stays deliberately oblivious
     // between pings -- the staleness is the gameplay knob.
+    advanceHauntTimer(dt);
     pingTimerSec_ += dt;
     if (pingTimerSec_ >= pingIntervalSec_) {
         this->pingDirector();

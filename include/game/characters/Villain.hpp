@@ -42,10 +42,9 @@
 // rare pings (stale info, easy to lose), Hard = frequent pings (the
 // ghost almost always knows where you are).
 //
-// Movement speed: WANDER_SPEED and CHASE_SPEED are BOTH strictly less
-// than the slowest player character's speed, so a skilled player can
-// kite the ghost indefinitely by maintaining maximum movement. See
-// tests/test_villain_ai.cpp for the speed-invariant guard.
+// Base wander and chase speeds are below the slowest player. After 90
+// and 180 seconds of haunting, pressure levels shorten Director pings
+// and increase speed so an endless kite eventually becomes unsafe.
 //
 ////////////////
 
@@ -80,17 +79,16 @@ public:
         director_.setEntities(entities);
     }
 
-    // Movement speeds in pixels per second. Both are intentionally
-    // below the slowest player character's speed (MOM = 120 * 0.85 =
-    // 102 px/s with vanilla mods.xml). A skilled player can kite the
-    // ghost by maintaining maximum movement, but stop for a moment and
-    // the chase boost will catch up. Tests pin this invariant.
+    // Base movement speeds in pixels per second. Pressure multipliers
+    // are applied separately as the haunt level rises.
     static double wanderSpeed();
     static double chaseSpeed();
 
     // Ping intervals in seconds per difficulty. Lower = ghost re-asks
     // the Director (and therefore re-targets) more often.
     static float pingIntervalFor(Config::DIFFICULTY d);
+    static int hauntLevelFor(float elapsedSeconds);
+    static double pressureMultiplierFor(int hauntLevel);
 
     // Find the closest living, targetable character anywhere on the
     // map. Thin wrapper around the owned Director; retained because
@@ -112,6 +110,8 @@ public:
 
     // Seconds between pings (driven by setDifficulty).
     float pingInterval() const { return pingIntervalSec_; }
+    int hauntLevel() const { return hauntLevel_; }
+    float hauntElapsed() const { return hauntElapsedSec_; }
     // Seconds elapsed since the last ping. Test hook.
     float timeSinceLastPing() const { return pingTimerSec_; }
     // Does the ghost currently have a wander hint cached from the
@@ -126,6 +126,7 @@ public:
     // Allow tests to drive the ping cadence by advancing the internal
     // timer without running the full onUpdate() pipeline.
     void advancePingTimer(float dt) { pingTimerSec_ += dt; }
+    void advanceHauntTimer(float dt);
     // Test hook: run only the room-scan / target-lock half of the
     // per-frame work, returning true when a target is locked.
     bool runRoomScanForTest() { return checkCharacters(); }
@@ -157,7 +158,10 @@ protected:
     // ---- Two-tier AI state. ----
     VillainDirector director_;
     float pingIntervalSec_ = 4.0f;   // NORMAL default; setDifficulty overwrites.
+    float basePingIntervalSec_ = 4.0f;
     float pingTimerSec_    = 0.f;    // Counts up; ping fires when >= pingIntervalSec_.
+    float hauntElapsedSec_ = 0.f;
+    int hauntLevel_ = 0;
     sf::Vector2f directorHintPos_;
     bool hasDirectorHint_  = false;
     // Non-owning pointer into entity_group's characters. Cleared when

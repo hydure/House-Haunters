@@ -267,7 +267,15 @@ void PlayerView::onDraw(sf::RenderTarget& target, sf::RenderStates /*states*/) c
     }
 
     const auto& evidence = InvestigationJournal::instance().entries();
-    std::string casebook = "CASE FILE (" + std::to_string(evidence.size()) + ")";
+    int hauntLevel = 0;
+    for (const auto& characterEntry : entity_group->getCharacters()) {
+        if (characterEntry && characterEntry->isVillain()) {
+            hauntLevel = static_cast<Villain*>(characterEntry.get())->hauntLevel();
+            break;
+        }
+    }
+    std::string casebook = "CASE FILE (" + std::to_string(evidence.size())
+        + ")  HAUNT " + std::to_string(hauntLevel);
     const size_t first = evidence.size() > 3 ? evidence.size() - 3 : 0;
     const size_t maxText = numPlayers >= 2 ? 27 : 48;
     for (size_t i = first; i < evidence.size(); ++i) {

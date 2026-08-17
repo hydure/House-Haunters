@@ -220,10 +220,10 @@ until they leave the room (or die, or become invul, or the Sister stops moving
 and turns invisible). A second player entering the same room cannot steal the
 chase from the first.
 
-Both the wander speed and the chase speed are **strictly slower than the
-slowest player character's base speed** (the Mother at `120 * 0.85 = 102` px/s).
-A skilled player who keeps moving can therefore kite the ghost indefinitely.
-Stop for a moment and the chase boost catches up. The
+The ghost begins slower than the slowest player character, leaving room for a
+clean escape. After 90 and 180 seconds of haunting, its pressure level rises:
+Director pings become more frequent and chase speed increases, so endless
+kiting eventually stops being safe. The
 [test_villain_ai.cpp](tests/test_villain_ai.cpp) suite pins this invariant
 along with the difficulty-scaled ping cadence.
 
