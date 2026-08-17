@@ -294,15 +294,18 @@ bool Villain::checkCharacters()
     }
 
     // ---- Step 2: no active lock -- scan the room for a new target.
-    for (const auto& c : entity_group->getCharacters()) {
-        if (c == nullptr || c.get() == this) continue;
-        if (isUnchaseable(*c))               continue;
-        if (c->hbox.intersects(roomHbox)) {
-            lockedCharacter_   = c.get();
-            this->hbox.setColor(sf::Color::Green);
-            this->chaseHbox    = c->hbox;
-            this->hasChaseHint = false;
-            return true;
+    for (int noisyPass = 1; noisyPass >= 0; --noisyPass) {
+        for (const auto& c : entity_group->getCharacters()) {
+            if (c == nullptr || c.get() == this) continue;
+            if (isUnchaseable(*c))               continue;
+            if (static_cast<int>(c->isDrawingAggro()) != noisyPass) continue;
+            if (c->hbox.intersects(roomHbox)) {
+                lockedCharacter_   = c.get();
+                this->hbox.setColor(sf::Color::Green);
+                this->chaseHbox    = c->hbox;
+                this->hasChaseHint = false;
+                return true;
+            }
         }
     }
 

@@ -30,6 +30,7 @@ Character* VillainDirector::nearestTo(sf::Vector2f origin) const
 
     Character* best  = nullptr;
     float bestDistSq = std::numeric_limits<float>::max();
+    bool bestIsNoisy = false;
     for (const auto& c : entities_->getCharacters()) {
         if (c == nullptr)        continue;
         if (c->isVillain())      continue;
@@ -46,9 +47,11 @@ Character* VillainDirector::nearestTo(sf::Vector2f origin) const
         const float dx = p.x - origin.x;
         const float dy = p.y - origin.y;
         const float d2 = dx * dx + dy * dy;
-        if (d2 < bestDistSq) {
+        const bool noisy = c->isDrawingAggro();
+        if ((noisy && !bestIsNoisy) || (noisy == bestIsNoisy && d2 < bestDistSq)) {
             bestDistSq = d2;
             best       = c.get();
+            bestIsNoisy = noisy;
         }
     }
     return best;

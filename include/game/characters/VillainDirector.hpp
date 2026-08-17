@@ -22,6 +22,7 @@
 //   * The Villain itself is never returned.
 //   * Dead characters (health <= 0) are skipped.
 //   * Invulnerable characters are skipped.
+//   * A sprinting Brother deliberately takes priority as a noisy decoy.
 //   * The Sister (SIS) is invisible to the Director while she is
 //     standing still (direction == (0,0)) -- stealth mechanic.
 //

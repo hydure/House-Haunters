@@ -101,6 +101,10 @@ public:
     // pin MOM_MATERNAL_FURY_BONUS.
     int currentStrengthBonus() const { return strengthBonus; }
     WeaponSystem::Type selectedWeapon() const { return selectedWeapon_; }
+    bool hasLivingTeammateInRoom() const;
+    bool isDrawingAggro() const { return drawingAggro_; }
+    void setDrawingAggro(bool active) { drawingAggro_ = active; }
+    bool redirectHitToDad();
     // Read-only accessor for DAD's current maxHealth. Tests use
     // this to pin DAD_KEEPS_TAKING_MULTIPLIER.
     int currentMaxHealth() const { return maxHealth; }
@@ -180,6 +184,8 @@ public:
     // can share it without further changes.
     int strengthBonus = 0;
     WeaponSystem::Type selectedWeapon_ = WeaponSystem::Type::NONE;
+    bool drawingAggro_ = false;
+    float dadProtectionCooldownSec_ = 0.f;
 
 protected:
     int gamepad_index = -1;

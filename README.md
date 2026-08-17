@@ -166,10 +166,10 @@ The whole project compiles with `/W4 /permissive-` on MSVC and `-Wall -Wextra
 
 | Character | Stats | Ability |
 |---|---|---|
-| **The Brother** (`BRO`) | 3 HP, base speed | Sprint toggle (`X` / `Square`) |
+| **The Brother** (`BRO`) | 3 HP, base speed | Sprints and draws the ghost while sprinting |
 | **The Sister** (`SIS`) | 3 HP, base speed | Invisible to the ghost while standing still |
-| **The Father** (`DAD`) | **5 HP**, base speed | Extra damage when using a jackpot item |
-| **The Mother** (`MOM`) | 3 HP, 0.85× speed | Can upgrade a "worthless" clue into a real one |
+| **The Father** (`DAD`) | **5 HP**, base speed | Extra matching-weapon damage; periodically absorbs a nearby ally's hit |
+| **The Mother** (`MOM`) | 3 HP, 0.85× speed | Can upgrade worthless clues; guaranteed while investigating together |
 
 Each player picks a unique character on the lobby screen; up to four players can
 join and the host can force-start with fewer (including solo).

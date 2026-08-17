@@ -80,9 +80,9 @@ void ControlsScreen::init()
         { "Open controls . Y  (title only)",  false },
         { "",                                  false },
         { "CHARACTER ABILITIES",              true  },
-        { "MOM 'Hunch' ... 50% to upgrade a worthless clue to a vague one", false },
-        { "DAD 'Strong Arm' Adds +2 damage with a matching weapon",         false },
-        { "BRO 'Sprint' .. Doubles speed while X is held",                  false },
+        { "MOM 'Hunch' ... Guaranteed with a teammate; 50% alone",          false },
+        { "DAD 'Protector' Absorbs a nearby ally hit every 10 seconds",      false },
+        { "BRO 'Decoy' ... Sprinting draws the ghost away from allies",      false },
         { "SIS 'Stealth' . Invisible to the villain while standing still",  false },
     };
 

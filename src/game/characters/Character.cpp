@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <unordered_map>
 #include "game/characters/Character.hpp"
 #include "game/InvestigationJournal.hpp"
@@ -109,6 +110,37 @@ bool Character::isLastAlive() const
         return false;
     }
     return true;
+}
+
+bool Character::hasLivingTeammateInRoom() const
+{
+    if (entity_group == nullptr || currentRoom == nullptr) return false;
+    for (const auto& teammate : entity_group->getCharacters()) {
+        if (!teammate || teammate.get() == this || teammate->isVillain()) continue;
+        if (teammate->health > 0 && teammate->currentRoom == currentRoom) return true;
+    }
+    return false;
+}
+
+bool Character::redirectHitToDad()
+{
+    if (entity_group == nullptr || currentRoom == nullptr
+        || character == Config::CHARACTER::DAD) {
+        return false;
+    }
+    for (const auto& teammate : entity_group->getCharacters()) {
+        if (!teammate || teammate.get() == this || teammate->isVillain()) continue;
+        if (teammate->character != Config::CHARACTER::DAD) continue;
+        if (teammate->health <= 0 || teammate->invul) continue;
+        if (teammate->currentRoom != currentRoom) continue;
+        if (teammate->dadProtectionCooldownSec_ > 0.f) continue;
+
+        teammate->health--;
+        teammate->invul = true;
+        teammate->dadProtectionCooldownSec_ = 10.f;
+        return true;
+    }
+    return false;
 }
 
 bool Character::anyChildHasDied() const
@@ -333,6 +365,9 @@ void Character::checkClues()
 
 void Character::onUpdate(float dt)
 {
+    if (dadProtectionCooldownSec_ > 0.f) {
+        dadProtectionCooldownSec_ = std::max(0.f, dadProtectionCooldownSec_ - dt);
+    }
     // SIS's "Final Girl" passive: the moment she becomes the only
     // living family member, lock in the speed boost. Idempotent --
     // there is no revive mechanic, so once she's alone she stays
@@ -414,6 +449,9 @@ void Character::checkCollisions()
 
 void Character::hurt()
 {
+    if (redirectHitToDad()) {
+        return;
+    }
     this->health--;
     this->invul = true;
     if (health > 0) {
@@ -461,6 +499,7 @@ void Character::onGamepadEvent(GamepadEvent e)
             }
             else if (e.button == "X" && character == Config::CHARACTER::BRO) {
                 this->speed /= 2;
+                drawingAggro_ = false;
             }
             if (this->direction.y <= -1) curr = &walk_up;
             if (this->direction.y >=  1) curr = &walk_down;
@@ -490,6 +529,7 @@ void Character::onGamepadEvent(GamepadEvent e)
             }
             if (e.button == "X" && character == Config::CHARACTER::BRO) {
                 this->speed *= 2;
+                drawingAggro_ = true;
             }
             if (e.button == "Y") {
                 cycleWeapon();
@@ -531,7 +571,7 @@ void Character::openHeldClue()
     // before reading it -- her "hunch" ability.
     if (character == Config::CHARACTER::MOM
         && this->currentClue->setClue == this->currentClue->clueWorthless
-        && randomInt(2) == 0) {
+        && (hasLivingTeammateInRoom() || randomInt(2) == 0)) {
         this->currentClue->setClue = this->currentClue->clueVague;
     }
     this->currentClue->open();
