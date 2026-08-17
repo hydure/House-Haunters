@@ -92,6 +92,8 @@ protected:
     mutable sf::RectangleShape clueBgBox;
     mutable sf::Text clueText;
     mutable bool clueTextReady = false;
+    mutable sf::RectangleShape casebookBg;
+    mutable sf::Text casebookText;
 
     // RAII handle for the gamepad listener registered in init(); removed
     // automatically when the PlayerView is destroyed.

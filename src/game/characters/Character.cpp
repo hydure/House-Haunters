@@ -1,5 +1,6 @@
 #include <unordered_map>
 #include "game/characters/Character.hpp"
+#include "game/InvestigationJournal.hpp"
 #include "game/characters/Villain.hpp"
 #include "game/objects/Clue.hpp"
 #include "engine/RandomUtil.hpp"
@@ -532,6 +533,20 @@ void Character::openHeldClue()
         this->currentClue->setClue = this->currentClue->clueVague;
     }
     this->currentClue->open();
+
+    InvestigationJournal::Tier tier = InvestigationJournal::Tier::WORTHLESS;
+    if (this->currentClue->setClue == this->currentClue->clueJackpot) {
+        tier = InvestigationJournal::Tier::JACKPOT;
+    }
+    else if (this->currentClue->setClue == this->currentClue->clueSpec) {
+        tier = InvestigationJournal::Tier::SPECIFIC;
+    }
+    else if (this->currentClue->setClue == this->currentClue->clueVague) {
+        tier = InvestigationJournal::Tier::VAGUE;
+    }
+    InvestigationJournal::instance().discover(
+        this->currentClue->setClue, tier, player_number);
+
     if (this->currentClue->setClue == this->currentClue->clueJackpot
         && !hasItem
         && !this->currentClue->activatedItem) {

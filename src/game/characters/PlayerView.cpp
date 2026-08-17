@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "game/characters/PlayerView.hpp"
+#include "game/InvestigationJournal.hpp"
 #include "game/screens/PauseMenu.hpp"
 #include "engine/Paths.hpp"
 #include "engine/ResourceFS.hpp"
@@ -197,6 +198,18 @@ void PlayerView::setView(sf::FloatRect dimensions, sf::FloatRect viewport)
     // safe to do here regardless of init() ordering.
     clueText.setFont(*ResourceManager::getFont(Paths::resource("fonts/Underdog-Regular.ttf")));
     clueTextReady = true;
+
+    const float casebookWidth = std::min(330.f, dimensions.width - 20.f);
+    casebookBg.setSize(sf::Vector2f(casebookWidth, 66.f));
+    casebookBg.setPosition(dimensions.width - casebookWidth - 10.f, 34.f);
+    casebookBg.setFillColor(sf::Color(0, 0, 0, 170));
+    casebookBg.setOutlineColor(sf::Color(190, 170, 100, 150));
+    casebookBg.setOutlineThickness(1.f);
+
+    casebookText.setFont(*ResourceManager::getFont(Paths::resource("fonts/Underdog-Regular.ttf")));
+    casebookText.setCharacterSize(numPlayers >= 2 ? 11 : 13);
+    casebookText.setFillColor(sf::Color(235, 225, 190));
+    casebookText.setPosition(casebookBg.getPosition() + sf::Vector2f(6.f, 3.f));
 }
 
 void PlayerView::onDraw(sf::RenderTarget& target, sf::RenderStates /*states*/) const
@@ -247,6 +260,23 @@ void PlayerView::onDraw(sf::RenderTarget& target, sf::RenderStates /*states*/) c
         heartSprite.setPosition(i * 30.f, 0.f);
         target.draw(heartSprite);
     }
+
+    const auto& evidence = InvestigationJournal::instance().entries();
+    std::string casebook = "CASE FILE (" + std::to_string(evidence.size()) + ")";
+    const size_t first = evidence.size() > 3 ? evidence.size() - 3 : 0;
+    const size_t maxText = numPlayers >= 2 ? 27 : 48;
+    for (size_t i = first; i < evidence.size(); ++i) {
+        std::string clue = evidence[i].text;
+        if (clue.size() > maxText) {
+            clue.resize(maxText - 3);
+            clue += "...";
+        }
+        casebook += "\n[P" + std::to_string(evidence[i].discoveredBy) + " "
+            + InvestigationJournal::tierName(evidence[i].tier) + "] " + clue;
+    }
+    casebookText.setString(casebook);
+    target.draw(casebookBg);
+    target.draw(casebookText);
 
     // Clue text box
     auto* character = follow.get();
