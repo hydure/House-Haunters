@@ -23,8 +23,9 @@ This file controls four things:
    override.
 3. **The villain** — spritesheet, frame size, walk-animation frame indices, and
    starting HP.
-4. **Audio & music** — the seven in-game cues (title loop, hunt cue,
-   game-over sting, lobby thunder, hurt / death stings, ghost chase) can be
+4. **Audio & music** — the ten in-game cues (title loop, hunt cue,
+   game-over sting, lobby thunder, hurt / death stings, ghost chase,
+   clue discovery, weapon selection, and haunt escalation) can be
    pointed at any `.ogg` / `.flac` / `.wav` file under `resources/`.
 
 > **Behavioral specials stay hardcoded.** MOM's worthless-clue upgrade,
@@ -206,6 +207,9 @@ you want to override; cues you don't list keep their vanilla path.
     <track id="player_hurt"    path="music/hurt.wav"/>
     <track id="player_death"   path="music/dead.wav"/>
     <track id="ghost_chase"    path="music/chase.wav"/>
+    <track id="clue_found"     path="music/curse.wav"/>
+    <track id="weapon_select"  path="music/loud.wav"/>
+    <track id="haunt_rise"     path="music/near.flac"/>
 </audio>
 ```
 
@@ -218,6 +222,9 @@ you want to override; cues you don't list keep their vanilla path.
 | `player_hurt`    | `music/hurt.wav`      | Played whenever a hero takes damage. |
 | `player_death`   | `music/dead.wav`      | Played when a hero dies. |
 | `ghost_chase`    | `music/chase.wav`     | Ghost lunge cue. |
+| `clue_found`     | `music/curse.wav`     | New evidence enters the shared case file. |
+| `weapon_select`  | `music/loud.wav`      | A player cycles weapon category. |
+| `haunt_rise`     | `music/near.flac`     | The ghost reaches a new pressure level. |
 
 **Supported formats:** `.ogg`, `.flac`, `.wav`. SFML 2.x does NOT ship
 `libmpg123`, so `.mp3` files will fail to load (silent at runtime).

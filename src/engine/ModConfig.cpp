@@ -332,6 +332,9 @@ bool ModConfig::parseBuffer(char* mutableBuffer)
             else if (id == "player_hurt")     audio_.player_hurt_sfx  = path;
             else if (id == "player_death")    audio_.player_death_sfx = path;
             else if (id == "ghost_chase")     audio_.ghost_chase_sfx  = path;
+            else if (id == "clue_found")      audio_.clue_found_sfx    = path;
+            else if (id == "weapon_select")   audio_.weapon_select_sfx = path;
+            else if (id == "haunt_rise")      audio_.haunt_rise_sfx    = path;
             // unknown id -> skip silently (no surprise rebinds).
         }
     }

@@ -314,6 +314,17 @@ void PlayerView::onDraw(sf::RenderTarget& target, sf::RenderStates /*states*/) c
         }
         if (character->currentClue != nullptr) {
             clueText.setString(character->currentClue->setClue);
+            sf::Color tierColor(150, 150, 150);
+            if (character->currentClue->setClue == character->currentClue->clueJackpot) {
+                tierColor = sf::Color(255, 145, 45);
+            }
+            else if (character->currentClue->setClue == character->currentClue->clueSpec) {
+                tierColor = sf::Color(255, 220, 80);
+            }
+            else if (character->currentClue->setClue == character->currentClue->clueVague) {
+                tierColor = sf::Color::White;
+            }
+            clueText.setFillColor(tierColor);
         } else {
             clueText.setString("");
         }

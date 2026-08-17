@@ -173,6 +173,7 @@ protected:
     // texture cache for the same reason described in Character.hpp.
     sf::Texture* death_map = nullptr;
     SpriteAnimation death_animation;
+    hh::Sound pressure_sound;
 
 private:
     // Speed setters that keep `speed` and `fastSpeed` in sync. The

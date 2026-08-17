@@ -33,6 +33,7 @@ void Villain::init()
     // data-driven via ModConfig (resources/mods.xml). Vanilla defaults
     // reproduce the original hardcoded values bit-for-bit.
     const auto& vm = ModConfig::instance().villain();
+    pressure_sound.load(Paths::resource(ModConfig::instance().audio().haunt_rise_sfx));
     sprite_map = ResourceManager::getTexture(Paths::resource(vm.sprite_sheet_path));
 
     walk_down.setSpriteSheet(*sprite_map);
@@ -116,10 +117,14 @@ void Villain::setDifficulty(Config::DIFFICULTY d)
 
 void Villain::advanceHauntTimer(float dt)
 {
+    const int previousLevel = hauntLevel_;
     if (dt > 0.f) {
         hauntElapsedSec_ += dt;
     }
     hauntLevel_ = hauntLevelFor(hauntElapsedSec_);
+    if (hauntLevel_ > previousLevel) {
+        pressure_sound.play();
+    }
     pingIntervalSec_ = basePingIntervalSec_ * (1.f - 0.2f * hauntLevel_);
 
     const double multiplier = pressureMultiplierFor(hauntLevel_);

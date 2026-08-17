@@ -126,6 +126,9 @@
     <!--   player_hurt     - hit sound played on damage                 -->
     <!--   player_death    - death sound played when a hero is killed   -->
     <!--   ghost_chase     - ghost lunge cue                            -->
+    <!--   clue_found      - new evidence added to the case file        -->
+    <!--   weapon_select   - weapon category cycled                     -->
+    <!--   haunt_rise      - ghost pressure level increased             -->
     <!-- ============================================================ -->
     <audio>
         <!-- title_music ships empty so the title screen is silent by
@@ -138,5 +141,8 @@
         <track id="player_hurt"    path="music/hurt.wav"/>
         <track id="player_death"   path="music/dead.wav"/>
         <track id="ghost_chase"    path="music/chase.wav"/>
+        <track id="clue_found"     path="music/curse.wav"/>
+        <track id="weapon_select"  path="music/loud.wav"/>
+        <track id="haunt_rise"     path="music/near.flac"/>
     </audio>
 </mods>

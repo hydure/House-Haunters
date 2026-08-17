@@ -377,6 +377,9 @@ TEST_CASE("ModConfig: audio defaults reproduce the historic hardcoded paths")
     CHECK_EQ(a.player_hurt_sfx,  std::string("music/hurt.wav"));
     CHECK_EQ(a.player_death_sfx, std::string("music/dead.wav"));
     CHECK_EQ(a.ghost_chase_sfx,  std::string("music/chase.wav"));
+    CHECK_EQ(a.clue_found_sfx,   std::string("music/curse.wav"));
+    CHECK_EQ(a.weapon_select_sfx, std::string("music/loud.wav"));
+    CHECK_EQ(a.haunt_rise_sfx,   std::string("music/near.flac"));
 }
 
 TEST_CASE("ModConfig: full audio override rebinds every cue")
@@ -391,6 +394,9 @@ TEST_CASE("ModConfig: full audio override rebinds every cue")
         "<track id=\"player_hurt\"    path=\"music/custom_ouch.wav\"/>"
         "<track id=\"player_death\"   path=\"music/custom_rip.wav\"/>"
         "<track id=\"ghost_chase\"    path=\"music/custom_boo.wav\"/>"
+        "<track id=\"clue_found\"     path=\"music/custom_clue.wav\"/>"
+        "<track id=\"weapon_select\"  path=\"music/custom_weapon.wav\"/>"
+        "<track id=\"haunt_rise\"     path=\"music/custom_haunt.wav\"/>"
         "</audio></mods>";
     REQUIRE(ModConfig::instance().loadFromString(xml));
     const auto& a = ModConfig::instance().audio();
@@ -401,6 +407,9 @@ TEST_CASE("ModConfig: full audio override rebinds every cue")
     CHECK_EQ(a.player_hurt_sfx,  std::string("music/custom_ouch.wav"));
     CHECK_EQ(a.player_death_sfx, std::string("music/custom_rip.wav"));
     CHECK_EQ(a.ghost_chase_sfx,  std::string("music/custom_boo.wav"));
+    CHECK_EQ(a.clue_found_sfx,   std::string("music/custom_clue.wav"));
+    CHECK_EQ(a.weapon_select_sfx, std::string("music/custom_weapon.wav"));
+    CHECK_EQ(a.haunt_rise_sfx,   std::string("music/custom_haunt.wav"));
     freshConfig();
 }
 

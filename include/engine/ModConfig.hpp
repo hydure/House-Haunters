@@ -115,6 +115,9 @@ public:
         std::string player_hurt_sfx  = "music/hurt.wav";     // Player takes a hit.
         std::string player_death_sfx = "music/dead.wav";     // Player dies.
         std::string ghost_chase_sfx  = "music/chase.wav";    // Ghost lunge cue.
+        std::string clue_found_sfx   = "music/curse.wav";    // New case-file evidence.
+        std::string weapon_select_sfx = "music/loud.wav";    // Weapon category changed.
+        std::string haunt_rise_sfx   = "music/near.flac";    // Haunt pressure increased.
     };
 
     // Singleton accessor. Constructed once with all-default values.

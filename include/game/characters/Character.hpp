@@ -214,6 +214,8 @@ protected:
     hh::Sound chara_hurt;
     hh::Sound chara_death;
     hh::Sound ghost_sound;
+    hh::Sound clue_found_sound;
+    hh::Sound weapon_select_sound;
     // An attack animation
     SpriteAnimation attack_anim;
     // The current animation

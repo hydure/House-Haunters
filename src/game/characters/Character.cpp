@@ -29,6 +29,8 @@ void Character::init()
     chara_hurt.load(Paths::resource(ModConfig::instance().audio().player_hurt_sfx));
     chara_death.load(Paths::resource(ModConfig::instance().audio().player_death_sfx));
     ghost_sound.load(Paths::resource(ModConfig::instance().audio().ghost_chase_sfx));
+    clue_found_sound.load(Paths::resource(ModConfig::instance().audio().clue_found_sfx));
+    weapon_select_sound.load(Paths::resource(ModConfig::instance().audio().weapon_select_sfx));
 
     this->direction = sf::Vector2f(0, 0);
     this->setOrigin(16, 16);
@@ -586,8 +588,10 @@ void Character::openHeldClue()
     else if (this->currentClue->setClue == this->currentClue->clueVague) {
         tier = InvestigationJournal::Tier::VAGUE;
     }
-    InvestigationJournal::instance().discover(
-        this->currentClue->setClue, tier, player_number);
+    if (InvestigationJournal::instance().discover(
+            this->currentClue->setClue, tier, player_number)) {
+        clue_found_sound.play();
+    }
 }
 
 void Character::cycleWeapon()
@@ -598,4 +602,5 @@ void Character::cycleWeapon()
         itemDamage += 2;
     }
     hasItem = true;
+    weapon_select_sound.play();
 }
