@@ -43,6 +43,16 @@ public:
         }
         return "?";
     }
+
+    static const char* difficultyDescription(DIFFICULTY d)
+    {
+        switch (d) {
+            case EASY:   return "60% house | 120s prep | 8s ghost pings";
+            case NORMAL: return "Standard house | 90s prep | 4s ghost pings";
+            case HARD:   return "150% house | 60s prep | 1.5s ghost pings";
+        }
+        return "";
+    }
 };
 
 #endif

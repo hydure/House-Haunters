@@ -38,6 +38,7 @@ protected:
     sf::Sprite sprite;
     sf::RectangleShape blackness;
     sf::Text difficulty_text;
+    sf::Text difficulty_detail;
     // Hint reminding the player they can open the controls screen.
     sf::Text controls_hint;
     // "Press Any Button to Continue / Start" prompt. Its string changes

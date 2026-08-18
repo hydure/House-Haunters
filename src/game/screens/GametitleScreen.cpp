@@ -42,6 +42,10 @@ void GametitleScreen::init()
     difficulty_text.setCharacterSize(20);
     difficulty_text.setFillColor(sf::Color::White);
     difficulty_text.setStyle(sf::Text::Bold);
+
+    difficulty_detail.setFont(*ResourceManager::getFont(Paths::resource("fonts/Underdog-Regular.ttf")));
+    difficulty_detail.setCharacterSize(13);
+    difficulty_detail.setFillColor(sf::Color(235, 225, 190));
     updateDifficultyText();
 
     // Hint about the controls screen. Always visible (no "first press"
@@ -174,6 +178,12 @@ void GametitleScreen::updateDifficultyText()
     sf::FloatRect b = difficulty_text.getLocalBounds();
     difficulty_text.setOrigin(b.left + b.width / 2.f, 0.f);
     difficulty_text.setPosition(720.f / 2.f, 480.f - 50.f);
+
+    difficulty_detail.setString(std::string(Config::difficultyDescription(config->difficulty))
+        + " | HAUNT rises 90s / 180s after arrival");
+    sf::FloatRect detailBounds = difficulty_detail.getLocalBounds();
+    difficulty_detail.setOrigin(detailBounds.left + detailBounds.width / 2.f, 0.f);
+    difficulty_detail.setPosition(720.f / 2.f, 480.f - 168.f);
 }
 
 void GametitleScreen::onUpdate(float dt)
@@ -264,6 +274,7 @@ void GametitleScreen::onDraw(sf::RenderTarget& ctx, sf::RenderStates /*states*/)
     ctx.draw(sprite);
     if (pressed) {
         ctx.draw(menu_backdrop);
+        ctx.draw(difficulty_detail);
         ctx.draw(difficulty_text);
         for (const auto& l : menu_lines) {
             ctx.draw(l);

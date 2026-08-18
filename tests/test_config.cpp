@@ -26,6 +26,16 @@ TEST_CASE("Config::difficultyName covers every enum value")
     CHECK_EQ(std::string(Config::difficultyName(Config::HARD)),   std::string("HARD"));
 }
 
+TEST_CASE("Config difficulty descriptions explain every gameplay lever")
+{
+    CHECK_EQ(std::string(Config::difficultyDescription(Config::EASY)),
+             std::string("60% house | 120s prep | 8s ghost pings"));
+    CHECK_EQ(std::string(Config::difficultyDescription(Config::NORMAL)),
+             std::string("Standard house | 90s prep | 4s ghost pings"));
+    CHECK_EQ(std::string(Config::difficultyDescription(Config::HARD)),
+             std::string("150% house | 60s prep | 1.5s ghost pings"));
+}
+
 TEST_CASE("Config CHARACTER enum values are stable (gameplay maps depend on them)")
 {
     // GameplayScreen and the networked-default mapping in HouseHaunters.cpp
