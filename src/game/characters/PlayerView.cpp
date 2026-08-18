@@ -4,6 +4,7 @@
 #include <vector>
 #include "game/characters/PlayerView.hpp"
 #include "game/InvestigationJournal.hpp"
+#include "game/SpectatorSupport.hpp"
 #include "game/screens/PauseMenu.hpp"
 #include "engine/Paths.hpp"
 #include "engine/ResourceFS.hpp"
@@ -132,6 +133,13 @@ void PlayerView::init()
                     else if (gpe.button == "RIGHT") {
                         cycleSpectator(+1);
                     }
+                    else if (gpe.button == "A") {
+                        auto watched = entity_group->getCharacter(currentTarget());
+                        if (watched) {
+                            SpectatorSupport::instance().ping(
+                                watched->currentRoom, playernumber);
+                        }
+                    }
                 }
                 return;
             }
@@ -215,6 +223,17 @@ void PlayerView::setView(sf::FloatRect dimensions, sf::FloatRect viewport)
     weaponText.setCharacterSize(numPlayers >= 2 ? 12 : 14);
     weaponText.setFillColor(sf::Color::White);
     weaponText.setPosition(dimensions.width - 150.f, dimensions.height - 38.f);
+
+    spectatorWarningBg.setSize(sf::Vector2f(std::min(280.f, dimensions.width - 20.f), 28.f));
+    spectatorWarningBg.setFillColor(sf::Color(125, 10, 10, 210));
+    spectatorWarningBg.setOutlineColor(sf::Color(255, 90, 70));
+    spectatorWarningBg.setOutlineThickness(2.f);
+    spectatorWarningBg.setPosition(10.f, dimensions.height / 2.f - 14.f);
+    spectatorWarningText.setFont(*ResourceManager::getFont(Paths::resource("fonts/Underdog-Regular.ttf")));
+    spectatorWarningText.setCharacterSize(numPlayers >= 2 ? 13 : 17);
+    spectatorWarningText.setFillColor(sf::Color::White);
+    spectatorWarningText.setStyle(sf::Text::Bold);
+    spectatorWarningText.setPosition(18.f, dimensions.height / 2.f - 11.f);
 }
 
 void PlayerView::onDraw(sf::RenderTarget& target, sf::RenderStates /*states*/) const
@@ -304,6 +323,14 @@ void PlayerView::onDraw(sf::RenderTarget& target, sf::RenderStates /*states*/) c
         + "  DMG " + std::to_string(follow->itemDamage));
     target.draw(itemBar);
     target.draw(weaponText);
+
+    auto& spectatorSupport = SpectatorSupport::instance();
+    if (spectatorSupport.activeIn(follow->currentRoom)) {
+        spectatorWarningText.setString("SPECTER WARNING FROM P"
+            + std::to_string(spectatorSupport.signaledBy()));
+        target.draw(spectatorWarningBg);
+        target.draw(spectatorWarningText);
+    }
 
     // Clue text box
     auto* character = follow.get();

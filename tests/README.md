@@ -37,6 +37,7 @@ test. Set `-DHH_RUN_TESTS_ON_BUILD=OFF` to build-only.
 | `test_room_generation.cpp` | Pure mansion-zone classification and themed room pools |
 | `test_screen_flow.cpp` | `GameEngine::changeGameScreen`, subscription cleanup, re-entry init |
 | `test_spectator.cpp` | `PlayerView` target follow + spectator cycling + GAME OVER contract |
+| `test_spectator_support.cpp` | Timed spectator room warnings and cooldown |
 | `test_teamwork.cpp` | BRO aggro priority and DAD same-room protection cooldown |
 | `test_villain_ai.cpp` | Alien: Isolation-style two-tier AI: target eligibility, difficulty-scaled ping cadence, cached hints, base speeds, timed HAUNT escalation, and every character's endgame passive. |
 | `test_villain_chase.cpp` | `Villain::nearestTargetCharacter` (now a thin wrapper around the Director) picks closest live player; skips dead/invul/stationary-SIS |

@@ -316,7 +316,7 @@ void PauseMenu::buildControlsPage()
         y += row.header ? (kLineSpacing - 2.f) : (kLineSpacing - 4.f);
     }
 
-    footer.setString("Press A / B to return");
+    footer.setString("Spectator: LEFT/RIGHT watch | A warn room | B back");
     centerInPanel(footer, kPanelY + kPanelH - 28.f);
 }
 

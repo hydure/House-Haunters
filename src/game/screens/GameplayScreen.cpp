@@ -5,6 +5,7 @@
 #include "engine/ClueReader.hpp"
 #include "engine/NetworkManager.hpp"
 #include "game/InvestigationJournal.hpp"
+#include "game/SpectatorSupport.hpp"
 #include "game/WeaponSystem.hpp"
 #include "game/characters/Character.hpp"
 #include "game/characters/Villain.hpp"
@@ -16,6 +17,7 @@ void GameplayScreen::init()
     hunt.load(Paths::resource(ModConfig::instance().audio().gameplay_music));
 
     InvestigationJournal::instance().reset();
+    SpectatorSupport::instance().reset();
     clock.restart();
     this->views.clear();
     entity_group = EntityGroup();
@@ -365,6 +367,7 @@ void GameplayScreen::onUpdate(float dt)
     }
     group.update(dt);
     entity_group.update(dt);
+    SpectatorSupport::instance().update(dt);
 
     // Keep the per-slot HP snapshot fresh so a player who disconnects
     // right now and reconnects later spawns back with the exact HP they

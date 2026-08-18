@@ -95,6 +95,8 @@ protected:
     mutable sf::RectangleShape casebookBg;
     mutable sf::Text casebookText;
     mutable sf::Text weaponText;
+    mutable sf::RectangleShape spectatorWarningBg;
+    mutable sf::Text spectatorWarningText;
 
     // RAII handle for the gamepad listener registered in init(); removed
     // automatically when the PlayerView is destroyed.
