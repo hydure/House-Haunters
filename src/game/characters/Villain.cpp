@@ -112,6 +112,11 @@ double Villain::pressureMultiplierFor(int hauntLevel)
     return 1.0;
 }
 
+float Villain::wrongWeaponPressurePenalty(int damage)
+{
+    return damage <= 1 ? 30.f : 0.f;
+}
+
 void Villain::setDifficulty(Config::DIFFICULTY d)
 {
     basePingIntervalSec_ = pingIntervalFor(d);
@@ -342,6 +347,11 @@ Character* Villain::nearestTargetCharacter() const
 
 void Villain::hurt()
 {
+    const float pressurePenalty = wrongWeaponPressurePenalty(healthCut);
+    if (pressurePenalty > 0.f) {
+        advanceHauntTimer(pressurePenalty);
+        pingDirector();
+    }
     const int damageDealt = std::max(0, std::min(health, healthCut));
     health -= healthCut;
     RunSummary::instance().recordDamage(damageDealt);

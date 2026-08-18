@@ -283,6 +283,13 @@ TEST_CASE("haunt pressure shortens Director ping cadence")
     CHECK(v.pingInterval() < levelOneInterval);
 }
 
+TEST_CASE("a wrong weapon provokes thirty seconds of haunt pressure")
+{
+    CHECK_EQ(Villain::wrongWeaponPressurePenalty(1), 30.f);
+    CHECK_EQ(Villain::wrongWeaponPressurePenalty(3), 0.f);
+    CHECK_EQ(Villain::wrongWeaponPressurePenalty(5), 0.f);
+}
+
 TEST_CASE("Director is reseated on the entity group the villain owns")
 {
     // After construction + setEntities, the owned director MUST see

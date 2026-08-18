@@ -187,7 +187,8 @@ join and the host can force-start with fewer (including solo).
    clue is one of four tiers: `worthless`, `vague`, `specific`, or `jackpot`.
    Combine clues to figure out which item kills the ghost.
 3. **Confront** — pick up the right item to do real damage. The wrong item still
-   stings the ghost a bit but won't kill it.
+  stings the ghost a bit, immediately reveals your position, and advances its
+  HAUNT pressure by 30 seconds.
 4. **Survive** — if a character is killed they enter spectator mode and can watch
    any teammate (LEFT/RIGHT to switch targets). The game ends with a `GAME OVER`
    screen only when every player is down. The villain gravitates toward the

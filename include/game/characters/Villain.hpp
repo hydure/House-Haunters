@@ -89,6 +89,7 @@ public:
     static float pingIntervalFor(Config::DIFFICULTY d);
     static int hauntLevelFor(float elapsedSeconds);
     static double pressureMultiplierFor(int hauntLevel);
+    static float wrongWeaponPressurePenalty(int damage);
 
     // Find the closest living, targetable character anywhere on the
     // map. Thin wrapper around the owned Director; retained because
