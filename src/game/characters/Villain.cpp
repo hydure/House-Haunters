@@ -1,8 +1,11 @@
 #include "game/characters/Villain.hpp"
+#include "game/InvestigationJournal.hpp"
+#include "game/RunSummary.hpp"
 #include "engine/RandomUtil.hpp"
 #include "engine/Paths.hpp"
 #include "engine/ModConfig.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <limits>
 
@@ -339,13 +342,18 @@ Character* Villain::nearestTargetCharacter() const
 
 void Villain::hurt()
 {
+    const int damageDealt = std::max(0, std::min(health, healthCut));
     health -= healthCut;
+    RunSummary::instance().recordDamage(damageDealt);
     this->randint = randomInt(static_cast<int>(this->g->rooms.size()));
     int count = 0;
     this->direction.x = 0;
     this->direction.y = 0;
     // Lazy, but just go to game over screen.
     if (health <= 0) {
+        RunSummary::instance().finish(
+            true,
+            static_cast<int>(InvestigationJournal::instance().entries().size()));
         auto event = std::make_shared< Event<std::string> >("GameEnd");
         Events::triggerEvent("change_screen", event);
     }

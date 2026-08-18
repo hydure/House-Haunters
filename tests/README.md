@@ -35,6 +35,7 @@ test. Set `-DHH_RUN_TESTS_ON_BUILD=OFF` to build-only.
 | `test_paths.cpp` | `Paths::resource()` resolution |
 | `test_random.cpp` | `PlantSeeds` + `randomInt` distribution invariants |
 | `test_room_generation.cpp` | Pure mansion-zone classification and themed room pools |
+| `test_run_summary.cpp` | End-of-run metrics, duration formatting, and rematch routing |
 | `test_screen_flow.cpp` | `GameEngine::changeGameScreen`, subscription cleanup, re-entry init |
 | `test_spectator.cpp` | `PlayerView` target follow + spectator cycling + GAME OVER contract |
 | `test_spectator_support.cpp` | Timed spectator room warnings and cooldown |

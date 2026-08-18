@@ -5,6 +5,7 @@
 #include "engine/ClueReader.hpp"
 #include "engine/NetworkManager.hpp"
 #include "game/InvestigationJournal.hpp"
+#include "game/RunSummary.hpp"
 #include "game/SpectatorSupport.hpp"
 #include "game/WeaponSystem.hpp"
 #include "game/characters/Character.hpp"
@@ -43,6 +44,7 @@ void GameplayScreen::init()
     }
     const int roomCount = static_cast<int>(basePerPlayers * difficultyMult);
     group.generateRoomGrid(roomCount > 0 ? roomCount : basePerPlayers);
+    RunSummary::instance().begin(config->difficulty, num_players, group.roomCount());
 
     // Phase-1 timer (time spent searching for clues before the villain
     // spawns) scales INVERSELY with difficulty -- easier games give you
@@ -73,7 +75,11 @@ void GameplayScreen::init()
 
     // RAII subscription: released when the engine leaves this screen.
     this->subscribe("player_died", [this](base_event_type /*e*/) {
+        RunSummary::instance().recordDeath();
         if (--num_players == 0) {
+            RunSummary::instance().finish(
+                false,
+                static_cast<int>(InvestigationJournal::instance().entries().size()));
             auto event = std::make_shared< Event<std::string> >("GameEnd");
             Events::queueEvent("change_screen", event);
         }
@@ -357,6 +363,8 @@ void GameplayScreen::onUpdate(float dt)
     if (pauseMenu.isOpen()) {
         return;
     }
+
+    RunSummary::instance().update(dt);
 
     // Service the listener / spawn any new player BEFORE per-view updates
     // so a brand-new view sees this tick instead of waiting a frame.

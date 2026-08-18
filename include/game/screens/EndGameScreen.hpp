@@ -14,9 +14,11 @@ public:
     void onUpdate(float dt) override;
     void onGamepadEvent(GamepadEvent gpe);
     void onDraw(sf::RenderTarget& ctx, sf::RenderStates states) const override;
+    static const char* destinationForButton(const std::string& button);
 
 protected:
     sf::Text text;
+    sf::Text summary_text;
     sf::Text press_any_button;
     sf::Clock clock;
 
